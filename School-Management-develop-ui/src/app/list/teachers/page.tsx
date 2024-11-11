@@ -55,6 +55,9 @@ const TeachersLists = () => {
 
   const handleFormSubmit = (data: any) => {
     console.log(data);
+    for (let [key, value] of data.entries()) {
+      console.log(key, value);
+    }
   };
 
   return (

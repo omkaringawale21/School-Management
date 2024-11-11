@@ -15,7 +15,6 @@ interface FileUploadFieldProps {
   disabled?: boolean;
   previewUrl?: string | null;
   onChange: (event: React.ChangeEvent<HTMLInputElement>) => void;
-  register: any;
 }
 
 const FileUploadField = ({
@@ -26,7 +25,6 @@ const FileUploadField = ({
   disabled = false,
   previewUrl,
   onChange,
-  register
 }: FileUploadFieldProps) => {
   const inputRef = useRef<HTMLInputElement | null>(null);
   const [preview, setPreview] = useState<string | null>(previewUrl || null);
@@ -54,7 +52,6 @@ const FileUploadField = ({
         accept={accept}
         disabled={disabled}
         onChange={handleFileChange}
-        {...register(name)}
         ref={inputRef}
         style={{ display: 'none' }}
       />

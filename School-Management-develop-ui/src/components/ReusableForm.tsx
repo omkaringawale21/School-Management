@@ -40,7 +40,6 @@ const ReusableForm: React.FC<ReusableFormProps> = ({
 
     const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>, fieldName: string) => {
         const file = event.target.files?.[0];
-        console.log("file ==>> ", file)
         if (file) {
             const url = URL.createObjectURL(file);
             setPreviewUrl(url);
@@ -59,7 +58,6 @@ const ReusableForm: React.FC<ReusableFormProps> = ({
                 } else {
                     formData.append(key, String(value));
                 }
-                console.log(key, value);
             });
             await onSubmit(formData);
         } finally {
@@ -92,7 +90,6 @@ const ReusableForm: React.FC<ReusableFormProps> = ({
                             disabled={isSubmitting}
                             previewUrl={previewUrl}
                             onChange={(e) => handleFileChange(e, name)}
-                            register={register}
                         />
                     );
                 }
