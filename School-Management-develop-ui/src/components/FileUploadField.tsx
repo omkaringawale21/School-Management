@@ -80,6 +80,7 @@ const FileUploadField = ({
             sx={{
               width: '100%',
               height: '100%',
+              objectFit: "fill",
               transition: 'transform 0.2s ease',
               '&:hover': {
                 transform: 'scale(1.05)',

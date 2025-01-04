@@ -11,7 +11,7 @@ import { Students } from "../students/students";
 export class Activities extends Model<ActivitiesI> {
     @PrimaryKey
     @Default(DataType.UUIDV4)
-    @Column(DataType.UUID)
+    @Column(DataType.STRING)
     id!: string;
 
     @Column(DataType.STRING)

@@ -16,6 +16,8 @@ import {
 import React, { useState } from "react";
 import { Delete, Edit } from "@mui/icons-material";
 import { RoleTitle } from "@/enums/RoleTitle";
+import Modal from "@/components/FormModal";
+import ReusableForm from "@/components/ReusableForm";
 
 const ClassesHeader = [
   "Class Names",
@@ -34,6 +36,10 @@ const ClassesLists = () => {
     setOpen(true);
   };
 
+  const closeModal = () => {
+    setOpen(false);
+  };
+
   const handleChangePage = (event: unknown, newPage: number) => {
     setPage(newPage);
   };
@@ -43,6 +49,13 @@ const ClassesLists = () => {
   ) => {
     setRowsPerPage(parseInt(event.target.value, 10));
     setPage(0);
+  };
+
+  const handleFormSubmit = (data: any) => {
+    console.log(data);
+    for (let [key, value] of data.entries()) {
+      console.log(key, value);
+    }
   };
 
   return (
@@ -154,6 +167,22 @@ const ClassesLists = () => {
             onRowsPerPageChange={handleChangeRowsPerPage}
           />
         </Paper>
+        {/* Form Modal */}
+        {open && (
+          <Modal
+            isOpen={open}
+            closeModal={closeModal}
+            // eslint-disable-next-line react/no-children-prop
+            children={
+              <ReusableForm
+                entity="Class"
+                onSubmit={handleFormSubmit}
+                handleClose={closeModal}
+              />
+            }
+            title={"Class"}
+          />
+        )}
       </div>
     </ProtectedRoute>
   );

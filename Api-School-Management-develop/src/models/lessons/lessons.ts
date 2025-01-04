@@ -11,7 +11,7 @@ import { Classes } from "../classes/classes";
 export class Lessons extends Model<LessonsI> {
     @PrimaryKey
     @Default(DataType.UUIDV4)
-    @Column(DataType.UUID)
+    @Column(DataType.STRING)
     id!: string;
 
     @ForeignKey(() => Subjects)

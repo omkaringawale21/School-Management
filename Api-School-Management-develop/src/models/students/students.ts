@@ -13,7 +13,7 @@ import { Years } from "../years/years";
 export class Students extends Model<StudentsI> {
     @PrimaryKey
     @Default(DataType.UUIDV4)
-    @Column(DataType.UUID)
+    @Column(DataType.STRING)
     id?: string;
 
     @Column(DataType.UUID)

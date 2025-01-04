@@ -11,7 +11,7 @@ import { Users } from "../users/users";
 export class Parents extends Model<ParentsI> {
     @PrimaryKey
     @Default(() => DataType.UUIDV4)
-    @Column(DataType.UUID)
+    @Column(DataType.STRING)
     id!: string;
 
     @Column(DataType.STRING)

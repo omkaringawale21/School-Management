@@ -1,9 +1,7 @@
 import { TeachersI } from "dtos/teachersDTO/teachersDTO";
 import { Business } from "../business/business";
-import { Column, Model, DataType, Table, PrimaryKey, Default, ForeignKey } from "sequelize-typescript";
+import { Column, Model, DataType, Table, PrimaryKey, Default, ForeignKey, BelongsTo } from "sequelize-typescript";
 import { Users } from "../users/users";
-import { Classes } from "../classes/classes";
-import { Years } from "../years/years";
 
 @Table({
     timestamps: true,
@@ -12,34 +10,32 @@ import { Years } from "../years/years";
 export class Teachers extends Model<TeachersI> {
     @PrimaryKey
     @Default(DataType.UUIDV4)
-    @Column(DataType.UUID)
+    @Column(DataType.STRING)
     id!: string;
 
     @Column(DataType.STRING)
-    fullname?: string;
+    fullname?: string;  
 
     @Column(DataType.STRING)
-    username?: string;
+    profileUrl?: string;
 
     @Column(DataType.STRING)
     email?: string;
 
-    @Column(DataType.INTEGER)
-    phoneNumber?: number;
+    @Column(DataType.STRING)
+    phoneNumber?: string;
 
     @ForeignKey(() => Business)
     @Column(DataType.STRING)
-    businessId?: string;
+    businessId!: string;
 
     @ForeignKey(() => Users)
     @Column(DataType.STRING)
     userId!: string;
 
-    @ForeignKey(() => Classes)
-    @Column(DataType.ARRAY(DataType.UUID))
-    classId!: string[];
+    @BelongsTo(() => Business)
+    business!: Business;
 
-    @ForeignKey(() => Years)
-    @Column(DataType.ARRAY(DataType.UUID))
-    yearId!: string[];
+    @BelongsTo(() => Users)
+    user!: Users;
 }

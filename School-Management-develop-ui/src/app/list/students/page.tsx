@@ -41,7 +41,7 @@ const StudentsLists = () => {
 
   const closeModal = () => {
     setOpen(false);
-  }
+  };
 
   const handleChangePage = (event: unknown, newPage: number) => {
     setPage(newPage);
@@ -112,6 +112,7 @@ const StudentsLists = () => {
                             </div>
                             <div className="w-[50px] h-[50px] overflow-hidden">
                               {bodyData.photo?.length ? (
+                                // eslint-disable-next-line @next/next/no-img-element
                                 <img
                                   src={bodyData.photo}
                                   alt={`${bodyData.name}'s photo`}
@@ -196,9 +197,21 @@ const StudentsLists = () => {
         </Paper>
 
         {/* Form Modal */}
-        {open && <Modal isOpen={open} closeModal={closeModal} children={
-          <ReusableForm entity="Student" onSubmit={handleFormSubmit} handleClose={closeModal} />
-        } title={"Student"} />}
+        {open && (
+          <Modal
+            isOpen={open}
+            closeModal={closeModal}
+            // eslint-disable-next-line react/no-children-prop
+            children={
+              <ReusableForm
+                entity="Student"
+                onSubmit={handleFormSubmit}
+                handleClose={closeModal}
+              />
+            }
+            title={"Student"}
+          />
+        )}
       </div>
     </ProtectedRoute>
   );

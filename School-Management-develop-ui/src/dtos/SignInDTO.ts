@@ -1,21 +1,22 @@
-class SignInDTO  {
-    private username: string;
-    private password: string;
-    
-    constructor (username: string, password: string) {
-        this.username = username;
-        this.password = password;
+class SignInDTO {
+  public readonly email: string;
+  public readonly password: string;
+
+  constructor(email: string, password: string) {
+    if (!email || typeof email !== "string") {
+      throw new Error("Invalid email");
+    }
+    if (!password || typeof password !== "string") {
+      throw new Error("Invalid password");
     }
 
-    static fromJSON(json: {username: string, password: string}) {
-        if (!json.username || typeof json.username !== 'string') {
-            throw new Error('Invalid username');
-        }
-        if (!json.password || typeof json.password !== 'string') {
-            throw new Error('Invalid password');
-        }
-        return new SignInDTO(json.username, json.password)
-    }
+    this.email = email;
+    this.password = password;
+  }
+
+  static fromJSON(json: { email: string; password: string }): SignInDTO {
+    return new SignInDTO(json.email, json.password);
+  }
 }
 
 export default SignInDTO;

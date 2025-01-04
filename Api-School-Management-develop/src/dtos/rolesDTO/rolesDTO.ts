@@ -1,4 +1,5 @@
 export interface RolesI {
-    id?: string;
-    roleName?: string;
+  id?: string;
+  roleName?: string;
+  businessId?: string;
 }

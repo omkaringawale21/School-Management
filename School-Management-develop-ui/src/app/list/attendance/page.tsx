@@ -17,6 +17,8 @@ import React, { useState } from "react";
 import { Delete, Edit } from "@mui/icons-material";
 import AccountCircleIcon from "@mui/icons-material/AccountCircle";
 import { RoleTitle } from "@/enums/RoleTitle";
+import Modal from "@/components/FormModal";
+import ReusableForm from "@/components/ReusableForm";
 
 const AttendancesHeader = [
   "Student Name",
@@ -38,6 +40,10 @@ const AttendanceLists = () => {
     setOpen(true);
   };
 
+  const closeModal = () => {
+    setOpen(false);
+  };
+
   const handleChangePage = (event: unknown, newPage: number) => {
     setPage(newPage);
   };
@@ -47,6 +53,13 @@ const AttendanceLists = () => {
   ) => {
     setRowsPerPage(parseInt(event.target.value, 10));
     setPage(0);
+  };
+
+  const handleFormSubmit = (data: any) => {
+    console.log(data);
+    for (let [key, value] of data.entries()) {
+      console.log(key, value);
+    }
   };
 
   return (
@@ -93,6 +106,7 @@ const AttendanceLists = () => {
                             </div>
                             <div className="w-[50px] h-[50px] overflow-hidden">
                               {bodyData.photo?.length ? (
+                                // eslint-disable-next-line @next/next/no-img-element
                                 <img
                                   src={bodyData.photo}
                                   alt={`${bodyData.name}'s photo`}
@@ -180,6 +194,22 @@ const AttendanceLists = () => {
             onRowsPerPageChange={handleChangeRowsPerPage}
           />
         </Paper>
+                {/* Form Modal */}
+                {open && (
+          <Modal
+            isOpen={open}
+            closeModal={closeModal}
+            // eslint-disable-next-line react/no-children-prop
+            children={
+              <ReusableForm
+                entity="Attendance"
+                onSubmit={handleFormSubmit}
+                handleClose={closeModal}
+              />
+            }
+            title={"Attendance"}
+          />
+        )}
       </div>
     </ProtectedRoute>
   );

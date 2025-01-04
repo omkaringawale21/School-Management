@@ -1,5 +1,6 @@
 import { RolesI } from "dtos/rolesDTO/rolesDTO";
-import { Table, Model, Column, PrimaryKey, DataType, Default } from "sequelize-typescript";
+import { Table, Model, Column, PrimaryKey, DataType, Default, BelongsTo, ForeignKey } from "sequelize-typescript";
+import { Business } from "../business/business";
 
 @Table({
     timestamps: true,
@@ -8,9 +9,16 @@ import { Table, Model, Column, PrimaryKey, DataType, Default } from "sequelize-t
 export class Roles extends Model <RolesI> {
     @PrimaryKey
     @Default(DataType.UUIDV4)
-    @Column(DataType.UUID)
+    @Column(DataType.STRING)
     id!: string;
 
     @Column(DataType.STRING)
     roleName!: string;
+
+    @ForeignKey(() => Business)
+    @Column(DataType.STRING)
+    businessId!: string;
+
+    @BelongsTo(() => Business)
+    business!: Business;
 }

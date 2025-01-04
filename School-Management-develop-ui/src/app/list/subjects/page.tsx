@@ -16,6 +16,8 @@ import {
 import React, { useState } from "react";
 import { Delete, Edit } from "@mui/icons-material";
 import { RoleTitle } from "@/enums/RoleTitle";
+import Modal from "@/components/FormModal";
+import ReusableForm from "@/components/ReusableForm";
 
 const SubjectsHeader = ["Subject Name", "Teachers", "Actions"];
 
@@ -28,6 +30,10 @@ const SubjectsLists = () => {
     setOpen(true);
   };
 
+  const closeModal = () => {
+    setOpen(false);
+  };
+
   const handleChangePage = (event: unknown, newPage: number) => {
     setPage(newPage);
   };
@@ -37,6 +43,13 @@ const SubjectsLists = () => {
   ) => {
     setRowsPerPage(parseInt(event.target.value, 10));
     setPage(0);
+  };
+
+  const handleFormSubmit = (data: any) => {
+    console.log(data);
+    for (let [key, value] of data.entries()) {
+      console.log(key, value);
+    }
   };
 
   return (
@@ -94,7 +107,7 @@ const SubjectsLists = () => {
                             {bodyData.teachers?.join(", ")}
                           </div>
                         </TableCell>
-                        <TableCell>
+                        <TableCell className="w-[100px]">
                           <div className="flex justify-around items-center">
                             <div className="w-[36px] h-[36px] bg-cyan-500 rounded-full flex justify-center items-center hover:opacity-55 cursor-pointer">
                               <Edit
@@ -139,6 +152,22 @@ const SubjectsLists = () => {
             onPageChange={handleChangePage}
             onRowsPerPageChange={handleChangeRowsPerPage}
           />
+          {/* Form Modal */}
+          {open && (
+            <Modal
+              isOpen={open}
+              closeModal={closeModal}
+              // eslint-disable-next-line react/no-children-prop
+              children={
+                <ReusableForm
+                  entity="Subject"
+                  onSubmit={handleFormSubmit}
+                  handleClose={closeModal}
+                />
+              }
+              title={"Subject"}
+            />
+          )}
         </Paper>
       </div>
     </ProtectedRoute>

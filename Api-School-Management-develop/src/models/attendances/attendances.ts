@@ -10,7 +10,7 @@ import { Table, Column, Model, Default, DataType, PrimaryKey, ForeignKey } from 
 export class Attendances extends Model<AttendancesI> {
     @PrimaryKey
     @Default(DataType.UUIDV4)
-    @Column(DataType.UUID)
+    @Column(DataType.STRING)
     id?: string;
 
     @Column(DataType.STRING)

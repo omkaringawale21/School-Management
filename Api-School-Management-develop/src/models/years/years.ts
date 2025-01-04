@@ -8,7 +8,7 @@ import { Column, Model, Table, PrimaryKey, Default, DataType } from "sequelize-t
 export class Years extends Model<YearsI> {
     @PrimaryKey
     @Default(DataType.UUIDV4)
-    @Column(DataType.UUID)
+    @Column(DataType.STRING)
     id!: string;
 
     @Column(DataType.INTEGER)

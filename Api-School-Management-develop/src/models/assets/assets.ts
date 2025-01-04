@@ -17,7 +17,7 @@ import {
 export class Assets extends Model<AssetsI> {
     @PrimaryKey
     @Default(DataType.UUIDV4)
-    @Column(DataType.UUID)
+    @Column(DataType.STRING)
     id!: string;
 
     @Column(DataType.STRING)

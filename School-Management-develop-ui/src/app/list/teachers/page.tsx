@@ -1,3 +1,4 @@
+/* eslint-disable react/no-children-prop */
 "use client";
 
 import ListNavbar from "@/components/ListNavbar";
@@ -15,10 +16,13 @@ import {
 } from "@mui/material";
 import React, { useState } from "react";
 import AccountCircleIcon from "@mui/icons-material/AccountCircle";
-import { Delete, Edit, X } from "@mui/icons-material";
+import { Delete, Edit } from "@mui/icons-material";
 import { RoleTitle } from "@/enums/RoleTitle";
 import ReusableForm from "@/components/ReusableForm";
 import Modal from "@/components/FormModal";
+import { useCreateTeacherMutation } from "@/redux/features/teachers/teachers.api";
+import { useGlobally } from "@/context/protected.context";
+import TeachersDTO from "@/dtos/TeachersDTO";
 
 const TeacherHeader = [
   "Info",
@@ -35,12 +39,21 @@ const TeachersLists = () => {
   const [open, setOpen] = useState<boolean>(false);
   const [page, setPage] = useState<number>(0);
   const [rowsPerPage, setRowsPerPage] = useState<number>(5);
+  const { handleLoadingFalse, handleLoadingTrue } = useGlobally();
+
+  const [
+    cerateDetails,
+    { isLoading: createTeacherLoading, data: teacherInfo },
+  ] = useCreateTeacherMutation();
+
+  console.log("Teacher Details ==>> ", teacherInfo);
+
   const createDetails = () => {
     setOpen(true);
   };
   const closeModal = () => {
     setOpen(false);
-  }
+  };
 
   const handleChangePage = (event: unknown, newPage: number) => {
     setPage(newPage);
@@ -53,11 +66,32 @@ const TeachersLists = () => {
     setPage(0);
   };
 
-  const handleFormSubmit = (data: any) => {
-    console.log(data);
-    for (let [key, value] of data.entries()) {
-      console.log(key, value);
+  const handleFormSubmit = async (data: any) => {
+    handleLoadingTrue?.();
+    try {
+      const teachersData = TeachersDTO.fromJSON(data);
+      console.log(teachersData.teacherName);
+      if (teachersData) {
+        const response = await cerateDetails({
+          address: teachersData.address,
+          classList: teachersData.classList,
+          phone: teachersData.phone,
+          subject: teachersData.subject,
+          teacherId: teachersData.teacherId,
+          teacherName: teachersData.teacherName,
+          profilePhoto: teachersData.profilePhoto,
+        }).unwrap();
+
+        console.log("Teachers ==>> ", response);
+      }
+    } catch (error) {
+      console.log("Teachers Registration failture ==>> ", error);
+    } finally {
+      handleLoadingFalse?.();
     }
+    // for (let [key, value] of data.entries()) {
+    //   console.log(key, value);
+    // }
   };
 
   return (
@@ -112,6 +146,7 @@ const TeachersLists = () => {
                             </div>
                             <div className="w-[50px] h-[50px] overflow-hidden">
                               {bodyData.photo?.length ? (
+                                // eslint-disable-next-line @next/next/no-img-element
                                 <img
                                   src={bodyData.photo}
                                   alt={`${bodyData.name}'s photo`}
@@ -148,7 +183,7 @@ const TeachersLists = () => {
                             {bodyData.address}
                           </div>
                         </TableCell>
-                        <TableCell>
+                        <TableCell className="w-[100px]">
                           <div className="flex justify-around items-center">
                             <div className="w-[36px] h-[36px] bg-cyan-500 rounded-full flex justify-center items-center hover:opacity-55 cursor-pointer">
                               <Edit
@@ -196,9 +231,21 @@ const TeachersLists = () => {
         </Paper>
 
         {/* Form Modal */}
-        {open && <Modal isOpen={open} closeModal={closeModal} children={
-          <ReusableForm entity="Teacher" onSubmit={handleFormSubmit} handleClose={closeModal} />
-        } title={"Teacher"} />}
+        {open && (
+          <Modal
+            isOpen={open}
+            closeModal={closeModal}
+            children={
+              <ReusableForm
+                entity="Teacher"
+                onSubmit={handleFormSubmit}
+                handleClose={closeModal}
+              />
+            }
+            title={"Teacher"}
+            maxHeight="70vh"
+          />
+        )}
       </div>
     </ProtectedRoute>
   );

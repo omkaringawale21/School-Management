@@ -10,7 +10,7 @@ import { Subjects } from "../subjects/subjects";
 export class Exams extends Model<ExamsI> {
     @PrimaryKey
     @Default(DataType.UUIDV4)
-    @Column(DataType.UUID)
+    @Column(DataType.STRING)
     id!: string;
 
     @ForeignKey(() => Subjects)

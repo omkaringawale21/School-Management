@@ -8,7 +8,7 @@ import { Table, Column, Model, DataType, PrimaryKey, Default } from "sequelize-t
 export class Classes extends Model<ClassesI> {
     @PrimaryKey
     @Default(DataType.UUIDV4)
-    @Column(DataType.UUID)
+    @Column(DataType.STRING)
     id!: string;
 
     @Column(DataType.STRING)

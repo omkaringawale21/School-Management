@@ -16,6 +16,8 @@ import {
 import React, { useState } from "react";
 import { Delete, Edit } from "@mui/icons-material";
 import { RoleTitle } from "@/enums/RoleTitle";
+import Modal from "@/components/FormModal";
+import ReusableForm from "@/components/ReusableForm";
 
 const AssignmentsHeader = [
   "Subject",
@@ -27,11 +29,17 @@ const AssignmentsHeader = [
 
 const AssignmentsLists = () => {
   const [search, setSearch] = useState<string>("");
+
   const [open, setOpen] = useState<boolean>(false);
   const [page, setPage] = useState<number>(0);
   const [rowsPerPage, setRowsPerPage] = useState<number>(5);
+  
   const createDetails = () => {
     setOpen(true);
+  };
+
+  const closeModal = () => {
+    setOpen(false);
   };
 
   const handleChangePage = (event: unknown, newPage: number) => {
@@ -45,14 +53,16 @@ const AssignmentsLists = () => {
     setPage(0);
   };
 
+  const handleFormSubmit = (data: any) => {
+    console.log(data);
+    for (let [key, value] of data.entries()) {
+      console.log(key, value);
+    }
+  };
+
   return (
     <ProtectedRoute
-      allowedRoles={[
-        `${RoleTitle.ADMIN}`,
-        `${RoleTitle.STUDENT}`,
-        `${RoleTitle.TEACHER}`,
-        `${RoleTitle.PARENT}`,
-      ]}
+      allowedRoles={[`${RoleTitle.ADMIN}`, `${RoleTitle.STUDENT}`, `${RoleTitle.TEACHER}`, `${RoleTitle.PARENT}`]}
       validRoutes={["/list/assignments"]}
     >
       <div className="bg-white p-4 rounded-md m-2 min-h-[100vh]">
@@ -88,7 +98,7 @@ const AssignmentsLists = () => {
                     })
                     .map((bodyData, index) => (
                       <TableRow key={index} className="even:bg-slate-50">
-                        <TableCell>
+                        <TableCell style={{ width: '20%' }}>
                           <div className="flex justify-start items-center gap-4 w-full">
                             <div className="flex flex-col">
                               <span className="text-md font-thin text-gray-500">
@@ -97,22 +107,22 @@ const AssignmentsLists = () => {
                             </div>
                           </div>
                         </TableCell>
-                        <TableCell>
+                        <TableCell style={{ width: '20%' }}>
                           <div className="text-md font-thin text-gray-500">
                             {bodyData.class}
                           </div>
                         </TableCell>
-                        <TableCell>
+                        <TableCell style={{ width: '20%' }}>
                           <div className="text-md font-thin text-gray-500">
                             {bodyData.teacher}
                           </div>
                         </TableCell>
-                        <TableCell>
+                        <TableCell style={{ width: '20%' }}>
                           <div className="text-md font-thin text-gray-500">
                             {bodyData.dueDate}
                           </div>
                         </TableCell>
-                        <TableCell>
+                        <TableCell style={{ width: '20%' }}>
                           <div className="flex justify-around items-center">
                             <div className="w-[36px] h-[36px] bg-cyan-500 rounded-full flex justify-center items-center hover:opacity-55 cursor-pointer">
                               <Edit
@@ -158,6 +168,22 @@ const AssignmentsLists = () => {
             onRowsPerPageChange={handleChangeRowsPerPage}
           />
         </Paper>
+        {/* Form Modal */}
+        {open && (
+          <Modal
+            isOpen={open}
+            closeModal={closeModal}
+            // eslint-disable-next-line react/no-children-prop
+            children={
+              <ReusableForm
+                entity="Assignment"
+                onSubmit={handleFormSubmit}
+                handleClose={closeModal}
+              />
+            }
+            title={"Assignment"}
+          />
+        )}
       </div>
     </ProtectedRoute>
   );

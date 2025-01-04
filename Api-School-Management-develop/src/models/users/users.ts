@@ -1,6 +1,7 @@
 import { UsersI } from "dtos/usersDTO/usersDTO";
 import { Business } from "../business/business";
-import { Table, Column, PrimaryKey, Default, Model, DataType, ForeignKey, } from "sequelize-typescript";
+import { Table, Column, PrimaryKey, Default, Model, DataType, ForeignKey, HasMany, } from "sequelize-typescript";
+import { Roles } from "../roles/roles";
 
 @Table({
     timestamps: true,
@@ -9,7 +10,7 @@ import { Table, Column, PrimaryKey, Default, Model, DataType, ForeignKey, } from
 export class Users extends Model<UsersI> {
     @PrimaryKey
     @Default(DataType.UUIDV4)
-    @Column(DataType.UUID)
+    @Column(DataType.STRING)
     id!: string;
 
     @Column(DataType.STRING)
@@ -20,6 +21,10 @@ export class Users extends Model<UsersI> {
 
     @Column(DataType.STRING)
     password!: string;
+
+    @ForeignKey(() => Roles)
+    @Column(DataType.STRING)
+    roleId!: string;
 
     @ForeignKey(() => Business)
     @Column(DataType.STRING)

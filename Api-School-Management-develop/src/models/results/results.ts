@@ -12,7 +12,7 @@ import { Students } from "../students/students";
 export class Results extends Model<ResultsI> {
     @PrimaryKey
     @Default(DataType.UUIDV4)
-    @Column(DataType.UUID)
+    @Column(DataType.STRING)
     id!: string;
 
     @Column(DataType.STRING)

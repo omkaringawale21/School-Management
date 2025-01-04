@@ -5,32 +5,42 @@ import Button from "@/components/Button";
 import InputField from "@/components/InputField";
 import { useGlobally } from "@/context/protected.context";
 import SignInDTO from "@/dtos/SignInDTO";
-import { RoleTitle } from "@/enums/RoleTitle";
+import { useUserLoginMutation } from "@/redux/features/auth/auth.api";
 import Image from "next/image";
 import { useForm } from "react-hook-form";
+
+interface LoginFormInputs {
+  email: string;
+  password: string;
+}
 
 const LoginPage = () => {
   const { login, handleLoadingFalse, handleLoadingTrue, loading, redirectFun } =
     useGlobally();
   const {
-    control,
     register,
     handleSubmit,
     formState: { errors },
-  } = useForm();
+  } = useForm<LoginFormInputs>();
+  const [userLogin] = useUserLoginMutation();
 
   const onSubmit = async (data: any) => {
-    handleLoadingTrue && handleLoadingTrue();
-    // Simulate an API call
-    setTimeout(() => {
+    handleLoadingTrue?.();
+    try {
       const signInData = SignInDTO.fromJSON(data);
-      console.log("Submitted data:", signInData);
-      if (login) {
-        login([`${RoleTitle.ADMIN}`]);
+      if (signInData) {
+        const response = await userLogin({
+          email: signInData.email,
+          password: signInData.password,
+        }).unwrap();
+        login && login([`${response.body.role}`]);
+        redirectFun?.(`/${response.body.role}`);
       }
-      handleLoadingFalse && handleLoadingFalse();
-      redirectFun && redirectFun(`/${RoleTitle.ADMIN}`);
-    }, 2000);
+    } catch (error) {
+      console.error("Login failed:", error);
+    } finally {
+      handleLoadingFalse?.();
+    }
   };
 
   return (
@@ -45,17 +55,17 @@ const LoginPage = () => {
           </div>
           {/* Input Container */}
           <form className="p-4 flex flex-col" onSubmit={handleSubmit(onSubmit)}>
-            <div className="w-full">
+            <div className="w-full mt-5">
               <InputField
-                id={"username"}
-                label={"UserName"}
+                id={"email"}
+                label={"Email"}
                 type={"text"}
                 register={register}
-                error={errors.username}
+                error={errors.email}
                 required={true}
               />
             </div>
-            <div className="w-full">
+            <div className="w-full mt-5">
               <InputField
                 id={"password"}
                 label={"Password"}

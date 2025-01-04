@@ -9,7 +9,7 @@ import { Column, Table, Model, DataType, PrimaryKey, ForeignKey, Default } from 
 export class Announcements extends Model<AnnouncementsI> {
     @PrimaryKey
     @Default(DataType.UUIDV4)
-    @Column(DataType.UUID)
+    @Column(DataType.STRING)
     id!: string;
 
     @Column(DataType.STRING)

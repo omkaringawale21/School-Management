@@ -16,6 +16,8 @@ import {
 import React, { useState } from "react";
 import { Delete, Edit } from "@mui/icons-material";
 import { RoleTitle } from "@/enums/RoleTitle";
+import Modal from "@/components/FormModal";
+import ReusableForm from "@/components/ReusableForm";
 
 const ResultsHeader = [
   "Subject",
@@ -37,6 +39,10 @@ const ResultsLists = () => {
     setOpen(true);
   };
 
+  const closeModal = () => {
+    setOpen(false);
+  };
+
   const handleChangePage = (event: unknown, newPage: number) => {
     setPage(newPage);
   };
@@ -46,6 +52,13 @@ const ResultsLists = () => {
   ) => {
     setRowsPerPage(parseInt(event.target.value, 10));
     setPage(0);
+  };
+
+  const handleFormSubmit = (data: any) => {
+    console.log(data);
+    for (let [key, value] of data.entries()) {
+      console.log(key, value);
+    }
   };
 
   return (
@@ -179,6 +192,22 @@ const ResultsLists = () => {
             onRowsPerPageChange={handleChangeRowsPerPage}
           />
         </Paper>
+        {/* Form Modal */}
+        {open && (
+          <Modal
+            isOpen={open}
+            closeModal={closeModal}
+            // eslint-disable-next-line react/no-children-prop
+            children={
+              <ReusableForm
+                entity="Result"
+                onSubmit={handleFormSubmit}
+                handleClose={closeModal}
+              />
+            }
+            title={"Result"}
+          />
+        )}
       </div>
     </ProtectedRoute>
   );
