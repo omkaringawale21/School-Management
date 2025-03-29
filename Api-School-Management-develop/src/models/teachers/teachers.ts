@@ -1,4 +1,4 @@
-import { TeachersI } from "dtos/teachersDTO/teachersDTO";
+import { TeacherInterface } from "../../dtos/teachersDTO/teachersDTO";
 import { Business } from "../business/business";
 import { Column, Model, DataType, Table, PrimaryKey, Default, ForeignKey, BelongsTo } from "sequelize-typescript";
 import { Users } from "../users/users";
@@ -7,23 +7,26 @@ import { Users } from "../users/users";
     timestamps: true,
     tableName: "teachers"
 })
-export class Teachers extends Model<TeachersI> {
+export class Teachers extends Model<TeacherInterface> {
     @PrimaryKey
     @Default(DataType.UUIDV4)
     @Column(DataType.STRING)
     id!: string;
 
     @Column(DataType.STRING)
-    fullname?: string;  
+    teacherName?: string;  
 
     @Column(DataType.STRING)
     profileUrl?: string;
 
     @Column(DataType.STRING)
-    email?: string;
+    teacherEmail?: string;
 
     @Column(DataType.STRING)
     phoneNumber?: string;
+
+    @Column(DataType.STRING)
+    address?: string;
 
     @ForeignKey(() => Business)
     @Column(DataType.STRING)

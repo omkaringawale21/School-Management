@@ -1,7 +1,7 @@
-export interface TeacherInputDTO {
-  teacherName: string;
-  teacherEmail: string;
-  teacherPassword: string;
+export interface StudentInputDTO {
+  studentName: string;
+  studentEmail: string;
+  studentPassword: string;
   subject: string[];
   classList: string[];
   phoneNumber: string;
@@ -9,10 +9,10 @@ export interface TeacherInputDTO {
   profileUrl: any;
 }
 
-export class TeacherDTO {
-  public readonly teacherName: string;
-  public readonly teacherEmail: string;
-  public readonly teacherPassword: string;
+export class StudentDTO {
+  public readonly studentName: string;
+  public readonly studentEmail: string;
+  public readonly studentPassword: string;
   public readonly subject: string[];
   public readonly classList: string[];
   public readonly phoneNumber: string;
@@ -20,29 +20,29 @@ export class TeacherDTO {
   public readonly profileUrl: any;
 
   constructor(
-    teacherName: string,
-    teacherEmail: string,
-    teacherPassword: string,
+    studentName: string,
+    studentEmail: string,
+    studentPassword: string,
     subject: string[],
     classList: string[],
     phoneNumber: string,
     address: string,
     profileUrl: any
   ) {
-    this.teacherName = teacherName;
-    this.teacherEmail = teacherEmail;
-    this.teacherPassword = teacherPassword;
+    this.studentName = studentName;
+    this.studentEmail = studentEmail;
+    this.studentPassword = studentPassword;
     this.subject = subject;
     this.classList = classList;
     this.phoneNumber = phoneNumber;
     this.address = address;
     this.profileUrl = profileUrl;
   }
-  static fromInputDTO(input: any): TeacherDTO {
-    return new TeacherDTO(
-      input.teacherName,
-      input.teacherEmail,
-      input.teacherPassword,
+  static fromInputDTO(input: any): StudentDTO {
+    return new StudentDTO(
+      input.studentName,
+      input.studentEmail,
+      input.studentPassword,
       input.subject,
       input.classList,
       input.phoneNumber,

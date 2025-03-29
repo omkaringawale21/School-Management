@@ -1,15 +1,14 @@
-// routes/teachers.routes/teachers.routes.ts
-import express, { Request, Response } from "express";
-import { TeacherDTO } from "../../dtos/teachersDTO/teachersDTO";
+import express from "express";
+import { StudentDTO } from "../../dtos/studentsDTO/studentsDTO";
 import { ROLES } from "../../enums/Roles";
 import { Business } from "../../models/business/business";
 import { Roles } from "../../models/roles/roles";
 import { Users } from "../../models/users/users";
-import { Teachers } from "../../models/teachers/teachers";
+import { Students } from "../../models/students/students";
 import imageStoreMiddleware from "../../middleware/imageStore.middleware";
 
-const teachersRoutes = express.Router();
-const teacherUpload = imageStoreMiddleware("Teacher");
+const studentsRoutes = express.Router();
+const studentUpload = imageStoreMiddleware("Student");
 
 // Helper functions
 const validateBusiness = async (businessPackageName: string) => {
@@ -41,28 +40,28 @@ const getUserRole = async (businessId: string, roleName: string) => {
   return userRole;
 };
 
-// Create a new teacher
-teachersRoutes.post(
+// Create a new student
+studentsRoutes.post(
   "/save",
-  teacherUpload.single("profileUrl"),
+  studentUpload.single("profileUrl"),
   async (req: any, res: any) => {
     try {
       const {
-        teacherName,
+        studentName,
         subject,
         classList,
         phoneNumber,
         address,
-        teacherEmail,
-        teacherPassword,
+        studentEmail,
+        studentPassword,
       } = req.body;
 
       const profileUrl = req.file;
       const businessPackageName = req.headers.businesspackagename as string;
 
-      // Validate teacher data
-      new TeacherDTO(
-        teacherName,
+      // Validate student data
+      new StudentDTO(
+        studentName,
         subject ? JSON.parse(subject) : [],
         classList ? JSON.parse(classList) : [],
         phoneNumber,
@@ -73,23 +72,23 @@ teachersRoutes.post(
       // Validate business
       const business = await validateBusiness(businessPackageName);
 
-      // Get teacher role
-      const userRole = await getUserRole(business.id, ROLES.TEACHERS);
+      // Get student role
+      const userRole = await getUserRole(business.id, ROLES.STUDENTS);
 
       // Create user account
       const userDetails = await Users.create({
         businessId: userRole.businessId,
-        email: teacherEmail,
-        password: teacherPassword,
+        email: studentEmail,
+        password: studentPassword,
         roleId: userRole.id,
-        username: teacherName,
+        username: studentName,
       });
 
-      // Create teacher profile
+      // Create student profile
       if (userDetails?.id) {
-        await Teachers.create({
-          teacherEmail,
-          teacherName,
+        await Students.create({
+          studentEmail,
+          studentName,
           phoneNumber,
           profileUrl: profileUrl?.filename ?? null,
           address,
@@ -98,7 +97,7 @@ teachersRoutes.post(
         });
 
         return res.status(200).json({
-          message: "Teacher registered successfully",
+          message: "Student registered successfully",
           status: 200,
           body: null,
         });
@@ -106,9 +105,9 @@ teachersRoutes.post(
         throw new Error("Failed to create user account");
       }
     } catch (error: any) {
-      console.error("Teacher creation error:", error);
+      console.error("Student creation error:", error);
       return res.status(400).json({
-        message: error.message || "Teacher registration failed",
+        message: error.message || "Student registration failed",
         status: 400,
         body: null,
       });
@@ -116,125 +115,125 @@ teachersRoutes.post(
   }
 );
 
-// Get all teachers
-teachersRoutes.get("/all", async (_req: any, res: any) => {
+// Get all students
+studentsRoutes.get("/all", async (_req: any, res: any) => {
   try {
-    const teachers = await Teachers.findAll({
+    const students = await Students.findAll({
       include: [Users],
     });
 
     return res.status(200).json({
-      message: "Teachers retrieved successfully",
+      message: "Students retrieved successfully",
       status: 200,
-      body: teachers,
+      body: students,
     });
   } catch (error) {
-    console.error("Get teachers error:", error);
+    console.error("Get students error:", error);
     return res.status(500).json({
-      message: "Failed to retrieve teachers",
+      message: "Failed to retrieve students",
       status: 500,
       body: null,
     });
   }
 });
 
-// Get teacher by ID
-teachersRoutes.get("/:id", async (req: any, res: any) => {
+// Get student by ID
+studentsRoutes.get("/:id", async (req: any, res: any) => {
   try {
     const { id } = req.params;
 
     if (!id) {
       return res.status(400).json({
-        message: "Teacher ID is required",
+        message: "Student ID is required",
         status: 400,
         body: null,
       });
     }
 
-    const teacher = await Teachers.findOne({
+    const students = await Students.findOne({
       where: { id },
     });
 
-    if (!teacher) {
+    if (!students) {
       return res.status(404).json({
-        message: "Teacher not found",
+        message: "Student not found",
         status: 404,
         body: null,
       });
     }
 
     return res.status(200).json({
-      message: "Teacher retrieved successfully",
+      message: "Student retrieved successfully",
       status: 200,
-      body: teacher,
+      body: students,
     });
   } catch (error) {
-    console.error("Get teacher error:", error);
+    console.error("Get student error:", error);
     return res.status(500).json({
-      message: "Failed to retrieve teacher",
+      message: "Failed to retrieve student",
       status: 500,
       body: null,
     });
   }
 });
 
-// Delete teacher
-teachersRoutes.delete("/:id", async (req: any, res: any) => {
+// Delete student
+studentsRoutes.delete("/:id", async (req: any, res: any) => {
   try {
     const { id } = req.params;
 
     if (!id) {
       return res.status(400).json({
-        message: "Teacher ID is required",
+        message: "Student ID is required",
         status: 400,
         body: null,
       });
     }
 
-    // Get teacher to find associated user
-    const teacher = await Teachers.findOne({ where: { id } });
+    // Get student to find associated user
+    const students = await Students.findOne({ where: { id } });
 
-    if (!teacher) {
+    if (!students) {
       return res.status(404).json({
-        message: "Teacher not found",
+        message: "Student not found",
         status: 404,
         body: null,
       });
     }
 
-    // Delete teacher record
-    await Teachers.destroy({ where: { id } });
+    // Delete student record
+    await Students.destroy({ where: { id } });
 
     // Also delete associated user account if exists
-    if (teacher.userId) {
-      await Users.destroy({ where: { id: teacher.userId } });
+    if (students.userId) {
+      await Users.destroy({ where: { id: students.userId } });
     }
 
     return res.status(200).json({
-      message: "Teacher deleted successfully",
+      message: "Student deleted successfully",
       status: 200,
       body: null,
     });
   } catch (error) {
-    console.error("Delete teacher error:", error);
+    console.error("Delete student error:", error);
     return res.status(500).json({
-      message: "Failed to delete teacher",
+      message: "Failed to delete student",
       status: 500,
       body: null,
     });
   }
 });
 
-// Update teacher
-teachersRoutes.put(
+// Update student
+studentsRoutes.put(
   "/:id",
-  teacherUpload.single("profileUrl"),
+  studentUpload.single("profileUrl"),
   async (req: any, res: any) => {
     try {
       const { id } = req.params;
       if (!id) {
         return res.status(400).json({
-          message: "Teacher ID is required",
+          message: "Student ID is required",
           status: 400,
           body: null,
         });
@@ -243,13 +242,13 @@ teachersRoutes.put(
       const businessPackageName = req.headers.businesspackagename as string;
       const business = await validateBusiness(businessPackageName);
 
-      const teacher = await Teachers.findOne({
+      const students = await Students.findOne({
         where: { id, businessId: business.id },
       });
 
-      if (!teacher) {
+      if (!students) {
         return res.status(404).json({
-          message: "Teacher not found",
+          message: "Student not found",
           status: 404,
           body: null,
         });
@@ -257,37 +256,37 @@ teachersRoutes.put(
 
       // Parse incoming data
       const updateData = {
-        teacherName: req.body.teacherName || teacher.teacherName,
-        phoneNumber: req.body.phoneNumber || teacher.phoneNumber,
-        address: req.body.address || teacher.address,
-        teacherEmail: req.body.teacherEmail || teacher.teacherEmail,
-        profileUrl: req.file?.filename || teacher.profileUrl,
+        studentName: req.body.studentName || students.studentName,
+        phoneNumber: req.body.phoneNumber || students.phoneNumber,
+        address: req.body.address || students.address,
+        studentEmail: req.body.studentEmail || students.studentEmail,
+        profileUrl: req.file?.filename || students.profileUrl,
       };
 
-      await Teachers.update(updateData, { where: { id } });
+      await Students.update(updateData, { where: { id } });
 
-      if (teacher.userId) {
+      if (students.userId) {
         await Users.update(
           {
-            email: updateData.teacherEmail,
-            username: updateData.teacherName,
-            ...(req.body.teacherPassword
-              ? { password: req.body.teacherPassword }
+            email: updateData.studentEmail,
+            username: updateData.studentName,
+            ...(req.body.studentPassword
+              ? { password: req.body.studentPassword }
               : {}),
           },
-          { where: { id: teacher.userId } }
+          { where: { id: students.userId } }
         );
       }
 
       return res.status(200).json({
-        message: "Teacher updated successfully",
+        message: "Student updated successfully",
         status: 200,
         body: null,
       });
     } catch (error) {
-      console.error("Update teacher error:", error);
+      console.error("Update student error:", error);
       return res.status(500).json({
-        message: "Failed to update teacher",
+        message: "Failed to update student",
         status: 500,
         body: null,
       });
@@ -295,4 +294,4 @@ teachersRoutes.put(
   }
 );
 
-export default teachersRoutes;
+export default studentsRoutes;

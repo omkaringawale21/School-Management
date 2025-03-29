@@ -1,9 +1,9 @@
+/* eslint-disable @next/next/no-img-element */
 /* eslint-disable react/no-children-prop */
 "use client";
 
 import ListNavbar from "@/components/ListNavbar";
 import UseTable from "@/components/UseTable";
-import { teachersData } from "@/lib/data";
 import ProtectedRoute from "@/protected.routes/protected.routes";
 import {
   Paper,
@@ -20,9 +20,18 @@ import { Delete, Edit } from "@mui/icons-material";
 import { RoleTitle } from "@/enums/RoleTitle";
 import ReusableForm from "@/components/ReusableForm";
 import Modal from "@/components/FormModal";
-import { useCreateTeacherMutation } from "@/redux/features/teachers/teachers.api";
+import {
+  useCreateTeacherMutation,
+  useDeleteTeacherDetailsMutation,
+  useGetAllTeacherListsQuery,
+  useGetSpecificTeacherDetailsQuery,
+  useUpdateTeacherMutation,
+} from "@/redux/features/teachers/teachers.api";
 import { useGlobally } from "@/context/protected.context";
-import TeachersDTO from "@/dtos/TeachersDTO";
+import { TeacherDTO } from "@/dtos/TeachersDTO";
+import imageCompression from "browser-image-compression";
+import AppLoader from "@/components/AppLoader";
+import { PICTURE_URL } from "@/config/config";
 
 const TeacherHeader = [
   "Info",
@@ -39,14 +48,25 @@ const TeachersLists = () => {
   const [open, setOpen] = useState<boolean>(false);
   const [page, setPage] = useState<number>(0);
   const [rowsPerPage, setRowsPerPage] = useState<number>(5);
-  const { handleLoadingFalse, handleLoadingTrue } = useGlobally();
+  const { handleLoadingFalse } = useGlobally();
+  const [id, setId] = useState<string>("");
 
-  const [
-    cerateDetails,
-    { isLoading: createTeacherLoading, data: teacherInfo },
-  ] = useCreateTeacherMutation();
+  const [cerateDetails, { isLoading: createTeacherLoading }] =
+    useCreateTeacherMutation();
 
-  console.log("Teacher Details ==>> ", teacherInfo);
+  const { data: teacherDetails, isLoading: getTeachersDataLoading } =
+    useGetAllTeacherListsQuery?.(undefined);
+
+  const {
+    data: specificTeacherDetails,
+    isLoading: getSpecificTeacherDataLoading,
+  } = useGetSpecificTeacherDetailsQuery(id, { skip: !id });
+
+  const [deleteDetails, { isLoading: deleteTeacherLoading }] =
+    useDeleteTeacherDetailsMutation?.(undefined);
+
+  const [updateDetails, { isLoading: updateTeacherLoading }] =
+    useUpdateTeacherMutation?.(undefined);
 
   const createDetails = () => {
     setOpen(true);
@@ -66,32 +86,101 @@ const TeachersLists = () => {
     setPage(0);
   };
 
-  const handleFormSubmit = async (data: any) => {
-    handleLoadingTrue?.();
+  const compressImage = async (image: File) => {
     try {
-      const teachersData = TeachersDTO.fromJSON(data);
-      console.log(teachersData.teacherName);
-      if (teachersData) {
-        const response = await cerateDetails({
-          address: teachersData.address,
-          classList: teachersData.classList,
-          phone: teachersData.phone,
-          subject: teachersData.subject,
-          teacherId: teachersData.teacherId,
-          teacherName: teachersData.teacherName,
-          profilePhoto: teachersData.profilePhoto,
-        }).unwrap();
-
-        console.log("Teachers ==>> ", response);
-      }
+      const compressedFile = await imageCompression(image, {
+        maxSizeMB: 1,
+        maxWidthOrHeight: 800,
+      });
+      return compressedFile;
     } catch (error) {
-      console.log("Teachers Registration failture ==>> ", error);
+      console.error("Error compressing image:", error);
+      return image;
+    }
+  };
+
+  const getSpecificTeachersdetails = (id: string) => {
+    setId(id);
+    createDetails();
+  };
+
+  const handleFormSubmit = async (data: any) => {
+    try {
+      // Validate and transform form data using DTO
+      const teachersData = TeacherDTO.fromInputDTO(data);
+      if (!teachersData) {
+        throw new Error("Invalid teacher data");
+      }
+  
+      // Prepare FormData payload
+      const prepareFormData = async (teacherData: any) => {
+        const formData = new FormData();
+        
+        formData.append("teacherName", teacherData.teacherName.trim());
+        formData.append("phoneNumber", teacherData.phoneNumber.trim());
+        formData.append("address", teacherData.address.trim());
+        formData.append("teacherEmail", teacherData.teacherEmail.trim());
+        
+        if (!id && teacherData.teacherPassword) {
+          formData.append("teacherPassword", teacherData.teacherPassword);
+        }
+  
+        formData.append(
+          "subject", 
+          JSON.stringify(
+            Array.isArray(teacherData.subject) 
+              ? teacherData.subject 
+              : [teacherData.subject].filter(Boolean)
+        ));
+        
+        formData.append(
+          "classList", 
+          JSON.stringify(
+            Array.isArray(teacherData.classList) 
+              ? teacherData.classList 
+              : [teacherData.classList].filter(Boolean)
+          )
+        );
+  
+        // Handle profile image if present
+        if (teacherData.profileUrl instanceof File) {
+          try {
+            const compressedImage = await compressImage(teacherData.profileUrl);
+            formData.append("profileUrl", compressedImage);
+          } catch (compressError) {
+            console.warn("Image compression failed, using original", compressError);
+            formData.append("profileUrl", teacherData.profileUrl);
+          }
+        } else if (typeof teacherData.profileUrl === 'string') {
+          formData.append("profileUrl", teacherData.profileUrl);
+        }
+  
+        return formData;
+      };
+  
+      const payloadForm = await prepareFormData(teachersData);
+      if (id) {
+        const response = await updateDetails({ 
+          teacherDetails: payloadForm, 
+          id 
+        }).unwrap();
+        
+        if (response.status === 200) {
+          closeModal();
+          setId("");
+        }
+      } else {
+        const response = await cerateDetails(payloadForm).unwrap();
+        if (response.status === 200) {
+          closeModal();
+        }
+      }
+  
+    } catch (error) {
+      console.error("Teacher operation failed:", error);
     } finally {
       handleLoadingFalse?.();
     }
-    // for (let [key, value] of data.entries()) {
-    //   console.log(key, value);
-    // }
   };
 
   return (
@@ -110,6 +199,7 @@ const TeachersLists = () => {
           createDetails={createDetails}
           searchText={search}
           setSearch={setSearch}
+          setId={setId}
         />
         <Paper className="w-full">
           <TableContainer className="w-full">
@@ -119,73 +209,92 @@ const TeachersLists = () => {
             >
               <UseTable headerLists={TeacherHeader} />
               <TableBody>
-                {teachersData.length > 0 ? (
-                  teachersData
+                {teacherDetails?.body.length > 0 ? (
+                  teacherDetails?.body
                     .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
                     .filter((filterData: any) => {
                       return (
-                        filterData?.name
+                        filterData?.teacherName
                           ?.toLowerCase()
                           ?.includes(search?.toLowerCase()) ||
-                        filterData?.email
+                        filterData?.teacherEmail
                           ?.toLowerCase()
                           ?.includes(search?.toLowerCase())
                       );
                     })
-                    .map((bodyData, index) => (
+                    .map((bodyData: any, index: any) => (
                       <TableRow key={index} className="even:bg-slate-50">
                         <TableCell>
-                          <div className="flex justify-start items-center gap-4 w-full">
+                          <div className="flex justify-between items-center gap-4 w-full">
                             <div className="flex flex-col">
-                              <span className="text-md font-thin text-gray-500">
-                                {bodyData.name}
+                              <span className="text-md font-light text-gray-500">
+                                {bodyData.teacherName}
                               </span>
                               <span className="text-sm text-gray-500">
-                                {bodyData.email}
+                                {bodyData.teacherEmail}
                               </span>
                             </div>
-                            <div className="w-[50px] h-[50px] overflow-hidden">
-                              {bodyData.photo?.length ? (
-                                // eslint-disable-next-line @next/next/no-img-element
+                            <div className="w-8 h-8">
+                              {bodyData.profileUrl ? (
                                 <img
-                                  src={bodyData.photo}
-                                  alt={`${bodyData.name}'s photo`}
+                                  src={`${PICTURE_URL}Teacher/${bodyData.profileUrl}`}
+                                  alt={`${bodyData.teacherName}'s photo`}
                                   className="rounded-full object-cover"
                                 />
                               ) : (
-                                <AccountCircleIcon />
+                                <AccountCircleIcon className="w-8 h-8 rounded-full object-cover" />
                               )}
                             </div>
                           </div>
                         </TableCell>
                         <TableCell>
-                          <div className="text-md font-thin text-gray-500">
-                            {bodyData.teacherId}
+                          <div className="text-md font-thin text-gray-500 truncate">
+                            {bodyData.id
+                              ?.toString()
+                              ?.substring(0, 10)
+                              ?.concat("...")}
                           </div>
                         </TableCell>
                         <TableCell>
-                          <div className="text-md font-thin text-gray-500">
-                            {bodyData.subjects?.join(", ")}
+                          <div className="text-md font-thin text-gray-500 truncate">
+                            <TableCell>
+                              <div className="text-md font-thin text-gray-500 truncate">
+                                {bodyData.subject?.length
+                                  ? bodyData.subject.join(", ")
+                                  : "---"}
+                              </div>
+                            </TableCell>
                           </div>
                         </TableCell>
                         <TableCell>
-                          <div className="text-md font-thin text-gray-500">
-                            {bodyData.classes?.join(", ")}
+                          <div className="text-md font-thin text-gray-500 truncate">
+                            <TableCell>
+                              <div className="text-md font-thin text-gray-500 truncate">
+                                {bodyData.classList?.length
+                                  ? bodyData.classList.join(", ")
+                                  : "---"}
+                              </div>
+                            </TableCell>
                           </div>
                         </TableCell>
                         <TableCell>
-                          <div className="text-md font-thin text-gray-500">
-                            {bodyData.phone}
+                          <div className="text-md font-thin text-gray-500 truncate">
+                            {bodyData.phoneNumber}
                           </div>
                         </TableCell>
                         <TableCell>
-                          <div className="text-md font-thin text-gray-500">
+                          <div className="text-md font-thin text-gray-500 truncate">
                             {bodyData.address}
                           </div>
                         </TableCell>
                         <TableCell className="w-[100px]">
                           <div className="flex justify-around items-center">
-                            <div className="w-[36px] h-[36px] bg-cyan-500 rounded-full flex justify-center items-center hover:opacity-55 cursor-pointer">
+                            <div
+                              className="w-[36px] h-[36px] bg-cyan-500 rounded-full flex justify-center items-center hover:opacity-55 cursor-pointer"
+                              onClick={() =>
+                                getSpecificTeachersdetails(bodyData.id)
+                              }
+                            >
                               <Edit
                                 className="text-white"
                                 sx={{
@@ -194,7 +303,12 @@ const TeachersLists = () => {
                                 }}
                               />
                             </div>
-                            <div className="w-[36px] h-[36px] bg-cyan-700 rounded-full flex justify-center items-center cursor-pointer hover:opacity-55">
+                            <div
+                              className="w-[36px] h-[36px] bg-cyan-700 rounded-full flex justify-center items-center cursor-pointer hover:opacity-55"
+                              onClick={() => {
+                                deleteDetails(bodyData?.id);
+                              }}
+                            >
                               <Delete
                                 className="text-white"
                                 sx={{
@@ -222,7 +336,7 @@ const TeachersLists = () => {
           <TablePagination
             rowsPerPageOptions={[5, 10, 25]}
             component="div"
-            count={teachersData.length}
+            count={teacherDetails?.body?.length || 0}
             rowsPerPage={rowsPerPage}
             page={page}
             onPageChange={handleChangePage}
@@ -240,6 +354,7 @@ const TeachersLists = () => {
                 entity="Teacher"
                 onSubmit={handleFormSubmit}
                 handleClose={closeModal}
+                defaultValues={id ? { ...specificTeacherDetails?.body } : {}}
               />
             }
             title={"Teacher"}
@@ -247,6 +362,11 @@ const TeachersLists = () => {
           />
         )}
       </div>
+      {(createTeacherLoading ||
+        getTeachersDataLoading ||
+        deleteTeacherLoading ||
+        updateTeacherLoading ||
+        getSpecificTeacherDataLoading) && <AppLoader />}
     </ProtectedRoute>
   );
 };

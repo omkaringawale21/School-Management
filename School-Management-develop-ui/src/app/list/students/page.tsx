@@ -1,8 +1,9 @@
+/* eslint-disable @next/next/no-img-element */
+/* eslint-disable react/no-children-prop */
 "use client";
 
 import ListNavbar from "@/components/ListNavbar";
 import UseTable from "@/components/UseTable";
-import { studentsData } from "@/lib/data";
 import ProtectedRoute from "@/protected.routes/protected.routes";
 import {
   Paper,
@@ -17,8 +18,20 @@ import React, { useState } from "react";
 import AccountCircleIcon from "@mui/icons-material/AccountCircle";
 import { Delete, Edit } from "@mui/icons-material";
 import { RoleTitle } from "@/enums/RoleTitle";
-import Modal from "@/components/FormModal";
 import ReusableForm from "@/components/ReusableForm";
+import Modal from "@/components/FormModal";
+import {
+  useCreateStudentMutation,
+  useDeleteStudentDetailsMutation,
+  useGetAllStudentListsQuery,
+  useGetSpecificStudentDetailsQuery,
+  useUpdateStudentMutation,
+} from "@/redux/features/students/students.api";
+import { useGlobally } from "@/context/protected.context";
+import { StudentDTO } from "@/dtos/StudentsDTO";
+import imageCompression from "browser-image-compression";
+import AppLoader from "@/components/AppLoader";
+import { PICTURE_URL } from "@/config/config";
 
 const StudentHeader = [
   "Info",
@@ -30,15 +43,34 @@ const StudentHeader = [
   "Actions",
 ];
 
-const StudentsLists = () => {
+const StudentLists = () => {
   const [search, setSearch] = useState<string>("");
   const [open, setOpen] = useState<boolean>(false);
   const [page, setPage] = useState<number>(0);
   const [rowsPerPage, setRowsPerPage] = useState<number>(5);
+  const { handleLoadingFalse } = useGlobally();
+  const [id, setId] = useState<string>("");
+
+  const [cerateDetails, { isLoading: createStudentLoading }] =
+    useCreateStudentMutation();
+
+  const { data: studentDetails, isLoading: getStudentsDataLoading } =
+    useGetAllStudentListsQuery?.(undefined);
+
+  const {
+    data: specificStudentDetails,
+    isLoading: getSpecificStudentDataLoading,
+  } = useGetSpecificStudentDetailsQuery(id, { skip: !id });
+
+  const [deleteDetails, { isLoading: deleteStudentLoading }] =
+    useDeleteStudentDetailsMutation?.(undefined);
+
+  const [updateDetails, { isLoading: updateStudentLoading }] =
+    useUpdateStudentMutation?.(undefined);
+
   const createDetails = () => {
     setOpen(true);
   };
-
   const closeModal = () => {
     setOpen(false);
   };
@@ -54,10 +86,103 @@ const StudentsLists = () => {
     setPage(0);
   };
 
-  const handleFormSubmit = (data: any) => {
-    console.log(data);
-    for (let [key, value] of data.entries()) {
-      console.log(key, value);
+  const compressImage = async (image: File) => {
+    try {
+      const compressedFile = await imageCompression(image, {
+        maxSizeMB: 1,
+        maxWidthOrHeight: 800,
+      });
+      return compressedFile;
+    } catch (error) {
+      console.error("Error compressing image:", error);
+      return image;
+    }
+  };
+
+  const getSpecificStudentsdetails = (id: string) => {
+    setId(id);
+    createDetails();
+  };
+
+  const handleFormSubmit = async (data: any) => {
+    try {
+      // Validate and transform form data using DTO
+      const studentsData = StudentDTO.fromInputDTO(data);
+      if (!studentsData) {
+        throw new Error("Invalid student data");
+      }
+
+      // Prepare FormData payload
+      const prepareFormData = async (studentData: any) => {
+        const formData = new FormData();
+
+        formData.append("studentName", studentData.studentName.trim());
+        formData.append("phoneNumber", studentData.phoneNumber.trim());
+        formData.append("address", studentData.address.trim());
+        formData.append("studentEmail", studentData.studentEmail.trim());
+
+        if (!id && studentData.studentPassword) {
+          formData.append("studentPassword", studentData.studentPassword);
+        }
+
+        formData.append(
+          "subject",
+          JSON.stringify(
+            Array.isArray(studentData.subject)
+              ? studentData.subject
+              : [studentData.subject].filter(Boolean)
+          )
+        );
+
+        formData.append(
+          "classList",
+          JSON.stringify(
+            Array.isArray(studentData.classList)
+              ? studentData.classList
+              : [studentData.classList].filter(Boolean)
+          )
+        );
+
+        // Handle profile image if present
+        if (studentData.profileUrl instanceof File) {
+          try {
+            const compressedImage = await compressImage(studentData.profileUrl);
+            formData.append("profileUrl", compressedImage);
+          } catch (compressError) {
+            console.warn(
+              "Image compression failed, using original",
+              compressError
+            );
+            formData.append("profileUrl", studentData.profileUrl);
+          }
+        } else if (typeof studentData.profileUrl === "string") {
+          formData.append("profileUrl", studentData.profileUrl);
+        }
+
+        return formData;
+      };
+
+      const payloadForm = await prepareFormData(studentsData);
+      if (id) {
+        const response = await updateDetails({
+          studentDetails: payloadForm,
+          id,
+        }).unwrap();
+
+        if (response.status === 200) {
+          closeModal();
+          setId("");
+        }
+      } else {
+        const response = await cerateDetails(payloadForm).unwrap();
+        if (response.status === 200) {
+          closeModal();
+        }
+      }
+    } catch (error) {
+      console.error("Student operation failed:", error);
+    } finally {
+      handleLoadingFalse?.();
     }
   };
 
@@ -67,6 +192,7 @@ const StudentsLists = () => {
         `${RoleTitle.ADMIN}`,
         `${RoleTitle.STUDENT}`,
         `${RoleTitle.TEACHER}`,
+        `${RoleTitle.PARENT}`,
       ]}
       validRoutes={["/list/students"]}
     >
@@ -76,6 +202,7 @@ const StudentsLists = () => {
           createDetails={createDetails}
           searchText={search}
           setSearch={setSearch}
+          setId={setId}
         />
         <Paper className="w-full">
           <TableContainer className="w-full">
@@ -85,73 +212,92 @@ const StudentsLists = () => {
             >
               <UseTable headerLists={StudentHeader} />
               <TableBody>
-                {studentsData.length > 0 ? (
-                  studentsData
+                {studentDetails?.body.length > 0 ? (
+                  studentDetails?.body
                     .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
                     .filter((filterData: any) => {
                       return (
-                        filterData?.name
+                        filterData?.studentName
                           ?.toLowerCase()
                           ?.includes(search?.toLowerCase()) ||
-                        filterData?.email
+                        filterData?.studentEmail
                           ?.toLowerCase()
                           ?.includes(search?.toLowerCase())
                       );
                     })
-                    .map((bodyData, index) => (
+                    .map((bodyData: any, index: any) => (
                       <TableRow key={index} className="even:bg-slate-50">
                         <TableCell>
-                          <div className="flex justify-start items-center gap-4 w-full">
+                          <div className="flex justify-between items-center gap-4 w-full">
                             <div className="flex flex-col">
-                              <span className="text-md font-thin text-gray-500">
-                                {bodyData.name}
+                              <span className="text-md font-light text-gray-500">
+                                {bodyData.studentName}
                               </span>
                               <span className="text-sm text-gray-500">
-                                {bodyData.email}
+                                {bodyData.studentEmail}
                               </span>
                             </div>
-                            <div className="w-[50px] h-[50px] overflow-hidden">
-                              {bodyData.photo?.length ? (
-                                // eslint-disable-next-line @next/next/no-img-element
+                            <div className="w-8 h-8">
+                              {bodyData.profileUrl ? (
                                 <img
-                                  src={bodyData.photo}
-                                  alt={`${bodyData.name}'s photo`}
+                                  src={`${PICTURE_URL}Student/${bodyData.profileUrl}`}
+                                  alt={`${bodyData.studentName}'s photo`}
                                   className="rounded-full object-cover"
                                 />
                               ) : (
-                                <AccountCircleIcon />
+                                <AccountCircleIcon className="w-8 h-8 rounded-full object-cover" />
                               )}
                             </div>
                           </div>
                         </TableCell>
                         <TableCell>
-                          <div className="text-md font-thin text-gray-500">
-                            {bodyData.studentId}
+                          <div className="text-md font-thin text-gray-500 truncate">
+                            {bodyData.id
+                              ?.toString()
+                              ?.substring(0, 10)
+                              ?.concat("...")}
                           </div>
                         </TableCell>
                         <TableCell>
-                          <div className="text-md font-thin text-gray-500">
-                            {bodyData.grade}
+                          <div className="text-md font-thin text-gray-500 truncate">
+                            <TableCell>
+                              <div className="text-md font-thin text-gray-500 truncate">
+                                {bodyData.subject?.length
+                                  ? bodyData.subject.join(", ")
+                                  : "---"}
+                              </div>
+                            </TableCell>
                           </div>
                         </TableCell>
                         <TableCell>
-                          <div className="text-md font-thin text-gray-500">
-                            {bodyData.class}
+                          <div className="text-md font-thin text-gray-500 truncate">
+                            <TableCell>
+                              <div className="text-md font-thin text-gray-500 truncate">
+                                {bodyData.classList?.length
+                                  ? bodyData.classList.join(", ")
+                                  : "---"}
+                              </div>
+                            </TableCell>
                           </div>
                         </TableCell>
                         <TableCell>
-                          <div className="text-md font-thin text-gray-500">
-                            {bodyData.phone}
+                          <div className="text-md font-thin text-gray-500 truncate">
+                            {bodyData.phoneNumber}
                           </div>
                         </TableCell>
                         <TableCell>
-                          <div className="text-md font-thin text-gray-500">
+                          <div className="text-md font-thin text-gray-500 truncate">
                             {bodyData.address}
                           </div>
                         </TableCell>
-                        <TableCell>
+                        <TableCell className="w-[100px]">
                           <div className="flex justify-around items-center">
-                            <div className="w-[36px] h-[36px] bg-cyan-500 rounded-full flex justify-center items-center hover:opacity-55 cursor-pointer">
+                            <div
+                              className="w-[36px] h-[36px] bg-cyan-500 rounded-full flex justify-center items-center hover:opacity-55 cursor-pointer"
+                              onClick={() =>
+                                getSpecificStudentsdetails(bodyData.id)
+                              }
+                            >
                               <Edit
                                 className="text-white"
                                 sx={{
@@ -160,7 +306,12 @@ const StudentsLists = () => {
                                 }}
                               />
                             </div>
-                            <div className="w-[36px] h-[36px] bg-cyan-700 rounded-full flex justify-center items-center cursor-pointer hover:opacity-55">
+                            <div
+                              className="w-[36px] h-[36px] bg-cyan-700 rounded-full flex justify-center items-center cursor-pointer hover:opacity-55"
+                              onClick={() => {
+                                deleteDetails(bodyData?.id);
+                              }}
+                            >
                               <Delete
                                 className="text-white"
                                 sx={{
@@ -188,7 +339,7 @@ const StudentsLists = () => {
           <TablePagination
             rowsPerPageOptions={[5, 10, 25]}
             component="div"
-            count={studentsData.length}
+            count={studentDetails?.body?.length || 0}
             rowsPerPage={rowsPerPage}
             page={page}
             onPageChange={handleChangePage}
@@ -201,20 +352,26 @@ const StudentsLists = () => {
           <Modal
             isOpen={open}
             closeModal={closeModal}
-            // eslint-disable-next-line react/no-children-prop
             children={
               <ReusableForm
                 entity="Student"
                 onSubmit={handleFormSubmit}
                 handleClose={closeModal}
+                defaultValues={id ? { ...specificStudentDetails?.body } : {}}
               />
             }
             title={"Student"}
+            maxHeight="70vh"
           />
         )}
       </div>
+      {(createStudentLoading ||
+        getStudentsDataLoading ||
+        deleteStudentLoading ||
+        updateStudentLoading ||
+        getSpecificStudentDataLoading) && <AppLoader />}
     </ProtectedRoute>
   );
 };
 
-export default StudentsLists;
+export default StudentLists;

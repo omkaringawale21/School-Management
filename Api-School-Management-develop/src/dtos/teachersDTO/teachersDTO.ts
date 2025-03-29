@@ -1,45 +1,47 @@
-export interface TeachersI {
-  id?: string;
-  fullname?: string;
-  profileUrl?: string;
-  email?: string;
-  phoneNumber?: number;
-  businessId?: string;
-  userId?: string;
-  classList?: string[];
-  subject?: string[];
+export interface TeacherInterface {
+  id?: string | null;
+  teacherName: string;
+  teacherEmail: string;
+  subject?: string[] | null;
+  classList?: string[] | null;
+  phoneNumber: string;
+  address: string;
+  profileUrl?: any | null;
+  userId?: string | null;
+  businessId?: string | null;
 }
 
-export class TeachersDTO {
-  private teacherEmail: string;
-  private teacherName: string;
-  private teacherPassword: string;
-  private teacherId: string;
-  private subject?: string[] | any = [];
-  private classList?: string[] | any = [];
-  private phone: string;
-  private address: string;
-  private profilePhoto: string;
+export class TeacherDTO {
+  public readonly teacherName: string;
+  public readonly subject: string[];
+  public readonly classList: string[];
+  public readonly phoneNumber: string;
+  public readonly address: string;
+  public readonly profileUrl: any;
 
   constructor(
-    teacherEmail: string,
     teacherName: string,
-    teacherPassword: string,
-    teacherId: string,
-    subject: string[] | any,
-    classList: string[] | any,
-    phone: string,
+    subject: string[],
+    classList: string[],
+    phoneNumber: string,
     address: string,
-    profilePhoto: string
+    profileUrl: any
   ) {
-    this.teacherEmail = teacherEmail;
     this.teacherName = teacherName;
-    this.teacherPassword = teacherPassword;
-    this.teacherId = teacherId;
     this.subject = subject;
     this.classList = classList;
-    this.phone = phone;
+    this.phoneNumber = phoneNumber;
     this.address = address;
-    this.profilePhoto = profilePhoto;
+    this.profileUrl = profileUrl;
+  }
+  static fromInputDTO(input: any): TeacherDTO {
+    return new TeacherDTO(
+      input.teacherName,
+      input.subject || [],
+      input.classList || [],
+      input.phoneNumber || null,
+      input.address || null,
+      input.profileUrl || null
+    );
   }
 }

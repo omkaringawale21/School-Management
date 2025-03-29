@@ -1,103 +1,106 @@
 "use client";
 
 import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
-import { TEACHER_APIS, BASE_URL } from "@/config/config";
+import { STUDENT_APIS, BASE_URL } from "@/config/config";
 
-interface TeachersResponse {
+interface StudentsResponse {
   body?: any;
   message: string;
   status: number;
 }
 
-export const teachersApi = createApi({
-  reducerPath: "teachersApi",
+export const studentsApi = createApi({
+  reducerPath: "studentsApi",
   baseQuery: fetchBaseQuery({ baseUrl: BASE_URL }),
-  tagTypes: ["teachersList"],
+  tagTypes: ["studentsList"],
   endpoints: (builder) => ({
-    createTeacher: builder.mutation<TeachersResponse, any>({
-      query: (teacherDetails) => ({
-        url: TEACHER_APIS.SAVE,
+    createStudent: builder.mutation<StudentsResponse, any>({
+      query: (studentDetails) => ({
+        url: STUDENT_APIS.SAVE,
         method: "POST",
         headers: {
           businessPackageName: "private@school",
         },
-        body: teacherDetails,
+        body: studentDetails,
       }),
       async onQueryStarted(_args, { dispatch, queryFulfilled }) {
         try {
           const result = await queryFulfilled;
           if (result?.data?.status === 200) {
             dispatch(
-              teachersApi.endpoints.getAllTeacherLists?.initiate(undefined)
+              studentsApi.endpoints.getAllStudentLists?.initiate(undefined)
             ) as any;
           }
         } catch (error) {
           console.error("Error creating teacher:", error);
         }
       },
-      invalidatesTags: ["teachersList"],
+      invalidatesTags: ["studentsList"],
     }),
-    getAllTeacherLists: builder.query<TeachersResponse, any>({
+    getAllStudentLists: builder.query<StudentsResponse, any>({
       query: () => ({
-        url: TEACHER_APIS.ALL,
+        url: STUDENT_APIS.ALL,
         method: "GET",
         headers: {
           businessPackageName: "private@school",
         },
-        invalidatesTags: ["teachersList"],
+        invalidatesTags: ["studentsList"],
       }),
     }),
-    getSpecificTeacherDetails: builder.query<TeachersResponse, any>({
+    getSpecificStudentDetails: builder.query<StudentsResponse, any>({
       query: (id) => ({
-        url: TEACHER_APIS.GET(id),
+        url: STUDENT_APIS.GET(id),
         method: "GET",
         headers: {
           businessPackageName: "private@school",
         },
-        invalidatesTags: ["teachersList"],
+        invalidatesTags: ["studentsList"],
       }),
     }),
-    deleteTeacherDetails: builder.mutation<TeachersResponse, any>({
+    deleteStudentDetails: builder.mutation<StudentsResponse, any>({
       query: (id) => ({
-        url: TEACHER_APIS.DELETE(id),
+        url: STUDENT_APIS.DELETE(id),
         method: "DELETE",
         headers: {
           businessPackageName: "private@school",
         },
         body: {},
       }),
-      invalidatesTags: ["teachersList"],
+      invalidatesTags: ["studentsList"],
     }),
-    updateTeacher: builder.mutation<TeachersResponse, { teacherDetails: any; id: string }>({
-      query: ({ teacherDetails, id }) => ({
-        url: TEACHER_APIS.UPDATE(id),
+    updateStudent: builder.mutation<
+      StudentsResponse,
+      { studentDetails: any; id: string }
+    >({
+      query: ({ studentDetails, id }) => ({
+        url: STUDENT_APIS.UPDATE(id),
         method: "PUT",
         headers: {
           businessPackageName: "private@school",
         },
-        body: teacherDetails,
+        body: studentDetails,
       }),
       async onQueryStarted(_args, { dispatch, queryFulfilled }) {
         try {
           const result = await queryFulfilled;
           if (result?.data?.status === 200) {
             dispatch(
-              teachersApi.endpoints.getAllTeacherLists?.initiate(undefined)
+              studentsApi.endpoints.getAllStudentLists?.initiate(undefined)
             ) as any;
           }
         } catch (error) {
           console.error("Error update teacher:", error);
         }
       },
-      invalidatesTags: ["teachersList"],
+      invalidatesTags: ["studentsList"],
     }),
   }),
 });
 
 export const {
-  useCreateTeacherMutation,
-  useGetAllTeacherListsQuery,
-  useGetSpecificTeacherDetailsQuery,
-  useDeleteTeacherDetailsMutation,
-  useUpdateTeacherMutation,
-} = teachersApi;
+  useCreateStudentMutation,
+  useDeleteStudentDetailsMutation,
+  useGetAllStudentListsQuery,
+  useGetSpecificStudentDetailsQuery,
+  useUpdateStudentMutation,
+} = studentsApi;

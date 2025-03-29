@@ -60,7 +60,7 @@ const FileUploadField = ({
         alignItems="center"
         justifyContent="center"
         width="100%"
-        height="160px"
+        height="360px"
         border="2px dashed"
         borderColor={error ? 'red' : 'grey.300'}
         borderRadius={2}
@@ -78,8 +78,8 @@ const FileUploadField = ({
             alt="Preview"
             variant="rounded"
             sx={{
-              width: '100%',
-              height: '100%',
+              width: '300px',
+              height: '300px',
               objectFit: "fill",
               transition: 'transform 0.2s ease',
               '&:hover': {

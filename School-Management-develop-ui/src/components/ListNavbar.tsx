@@ -9,9 +9,10 @@ interface ListNavBarProps {
   searchText: string | undefined;
   createDetails: () => void;
   setSearch: (search: string) => void;
+  setId: React.Dispatch<React.SetStateAction<string>> | undefined;
 }
 
-const ListNavbar = ({ title, searchText, createDetails, setSearch }: ListNavBarProps) => {
+const ListNavbar = ({ title, searchText, createDetails, setSearch, setId }: ListNavBarProps) => {
   return (
     <div className="flex justify-between items-center mb-4">
       <div>
@@ -30,7 +31,10 @@ const ListNavbar = ({ title, searchText, createDetails, setSearch }: ListNavBarP
           />
         </div>
         <div
-          onClick={createDetails}
+          onClick={() => {
+            createDetails(); 
+            setId?.("");
+          }}
           className="w-[36px] h-[36px] bg-yellow-200 rounded-full flex justify-center items-center hover:bg-yellow-500 cursor-pointer"
         >
           <AddIcon className="text-gray-500" />

@@ -12,32 +12,16 @@ export type FormSchema = {
 
 export const formSchemas: FormSchema = {
   Parent: [
-    { name: "parentName", label: "Parent Name", type: "text" },
+    { name: "parentName", label: "Parent Name", type: "text", },
     { name: "parentEmail", label: "Email", type: "email" },
     { name: "studentName", label: "Student Name", type: "text" },
     { name: "phone", label: "Phone", type: "tel" },
     { name: "address", label: "Address", type: "text" },
   ],
   Student: [
-    { name: "name", label: "Student Name", type: "text" },
-    { name: "studentId", label: "Student ID", type: "text" },
-    { name: "subject", label: "Subject", type: "number" },
-    { name: "studentMailId", label: "Student Mail ID", type: "email" },
-    { name: "class", label: "Class", type: "text" },
-    { name: "phone", label: "Phone", type: "tel" },
-    { name: "address", label: "Address", type: "text" },
-    {
-      name: "profilePhoto",
-      label: "Profile Photo",
-      type: "file",
-      isFileUpload: true,
-    },
-  ],
-  Teacher: [
-    { name: "teacherName", label: "Teacher Name", type: "text" },
-    { name: "teacherEmail", label: "Teacher Email Id", type: "email" },
-    { name: "teacherPassword", label: "Password", type: "password" },
-    { name: "teacherId", label: "Teacher ID", type: "text" },
+    { name: "studentName", label: "Student Name", type: "text" },
+    { name: "studentEmail", label: "Student Email Id", type: "email" },
+    { name: "studentPassword", label: "Password", type: "password" },
     {
       name: "subject",
       label: "Subject",
@@ -48,10 +32,33 @@ export const formSchemas: FormSchema = {
       label: "Class List",
       iSMultiPleSelectDropdown: true,
     },
-    { name: "phone", label: "Phone", type: "tel" },
+    { name: "phoneNumber", label: "Phone", type: "tel" },
     { name: "address", label: "Address", type: "text" },
     {
-      name: "profilePhoto",
+      name: "profileUrl",
+      label: "Profile Photo",
+      type: "file",
+      isFileUpload: true,
+    },
+  ],
+  Teacher: [
+    { name: "teacherName", label: "Teacher Name", type: "text" },
+    { name: "teacherEmail", label: "Teacher Email Id", type: "email" },
+    { name: "teacherPassword", label: "Password", type: "password" },
+    {
+      name: "subject",
+      label: "Subject",
+      iSMultiPleSelectDropdown: true,
+    },
+    {
+      name: "classList",
+      label: "Class List",
+      iSMultiPleSelectDropdown: true,
+    },
+    { name: "phoneNumber", label: "Phone", type: "tel" },
+    { name: "address", label: "Address", type: "text" },
+    {
+      name: "profileUrl",
       label: "Profile Photo",
       type: "file",
       isFileUpload: true,

@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useForm, SubmitHandler } from "react-hook-form";
 import {
   TextField,
@@ -14,6 +14,7 @@ import { cn } from "@/lib/utils";
 import FileUploadField from "./FileUploadField";
 import MultiSelectDropdown from "./MultiSelect";
 import CloseIcon from "@mui/icons-material/Close";
+import { PICTURE_URL } from "@/config/config";
 
 const options = [
   { key: "Option 1", value: "option1" },
@@ -31,6 +32,8 @@ interface ReusableFormProps {
   onSubmit: SubmitHandler<Record<string, any>>;
   handleClose: (shouldClose: boolean) => void;
   defaultValues?: Record<string, any>;
+  id?: string;
+  hideElement?: boolean;
 }
 
 const ReusableForm: React.FC<ReusableFormProps> = ({
@@ -38,10 +41,12 @@ const ReusableForm: React.FC<ReusableFormProps> = ({
   onSubmit,
   handleClose,
   defaultValues = {},
+  id = "",
+  hideElement = false,
 }) => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
-  const [fileName, setFileName] = useState<string | null>(null); // To store the file name
+  const [fileName, setFileName] = useState<File | null>(null);
 
   const {
     register,
@@ -51,37 +56,44 @@ const ReusableForm: React.FC<ReusableFormProps> = ({
     setValue,
     control,
   } = useForm<Record<string, any>>({
-    defaultValues: {
-      selectedOptions: [],
-    },
+    defaultValues: defaultValues,
   });
+
+  useEffect(() => {
+    if (defaultValues) {
+      for (const key in defaultValues) {
+        setValue(key, defaultValues[key]);
+      }
+    }
+  }, [defaultValues, setValue]);
 
   // File Change Handler to handle file preview and store the file name
   const handleFileChange = (
     event: React.ChangeEvent<HTMLInputElement>,
     fieldName: string
   ) => {
-    const file = event.target.files?.[0];
+    const file = event.target.files?.[0] ?? null;
     if (file) {
       const url = URL.createObjectURL(file);
-      setPreviewUrl(url); // For previewing
-      setFileName(file.name); // Store the file name to send to the backend
-      setValue(fieldName, file); // Keep the file object for the form (if needed)
+      setPreviewUrl(url);
+      setFileName(file);
+      setValue(fieldName, file);
+    } else {
+      setPreviewUrl(defaultValues.profileUrl ? `${PICTURE_URL}${entity}/${defaultValues.profileUrl}` : null);
     }
   };
+  
 
   const handleFormSubmit: SubmitHandler<Record<string, any>> = async (data) => {
     try {
       setIsSubmitting(true);
       const processedData = { ...data };
-
-      // Process file data: Only send the file name (not the full file content)
       for (const [key, value] of Object.entries(data)) {
         if (value instanceof File) {
-          processedData[key] = fileName; // Only send file name to the backend
+          processedData[key] = fileName;
         }
       }
-      await onSubmit(processedData); // Pass the processed data to the submit handler
+      await onSubmit(processedData);
     } finally {
       setTimeout(() => {
         setIsSubmitting(false);
@@ -124,7 +136,9 @@ const ReusableForm: React.FC<ReusableFormProps> = ({
                 accept={accept}
                 error={errors[name]?.message?.toString()}
                 disabled={isSubmitting}
-                previewUrl={previewUrl}
+                previewUrl={
+                  value ? `${PICTURE_URL}${entity}/${value}` : previewUrl
+                }
                 onChange={(e) => handleFileChange(e, name)}
               />
             );
@@ -134,6 +148,7 @@ const ReusableForm: React.FC<ReusableFormProps> = ({
             return (
               // eslint-disable-next-line react/jsx-key
               <MultiSelectDropdown
+                key={name}
                 label={label}
                 name={name}
                 options={options}

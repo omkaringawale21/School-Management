@@ -10,6 +10,7 @@ authRoutes.post("/sign-in", async (req: any, res: any) => {
     const { email, password } = req.body;
     const details = new SignInDTO(email, password);
     if (!details) {
+      console.log("Invalid credentials!");
       return res.status(400).json({
         message: "Invalid credentials!",
         status: 400,
@@ -21,6 +22,7 @@ authRoutes.post("/sign-in", async (req: any, res: any) => {
       attributes: ["id", "email", "businessId", "roleId"],
     });
     if (!userDetails?.id) {
+      console.log("User not found!");
       return res.status(400).json({
         message: "User not found!",
         status: 400,
@@ -29,9 +31,10 @@ authRoutes.post("/sign-in", async (req: any, res: any) => {
     }
     const userRole = await Roles.findOne({
       where: { id: userDetails?.roleId },
-      attributes: ["roleName"]
+      attributes: ["id", "roleName"],
     });
     if (!userRole?.id) {
+      console.log("Role not found!");
       return res.status(400).json({
         message: "Role not found!",
         status: 400,
@@ -50,7 +53,7 @@ authRoutes.post("/sign-in", async (req: any, res: any) => {
       body: ResponseBody,
     });
   } catch (error) {
-    console.log(error);
+    console.log("Auth Routes ==>>", error);
     return res.status(500).json({
       message: "Internal server error",
       status: 500,
