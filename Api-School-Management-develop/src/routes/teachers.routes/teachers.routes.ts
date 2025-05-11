@@ -7,39 +7,11 @@ import { Roles } from "../../models/roles/roles";
 import { Users } from "../../models/users/users";
 import { Teachers } from "../../models/teachers/teachers";
 import imageStoreMiddleware from "../../middleware/imageStore.middleware";
+import validateBusiness from "../../services/validateBusiness";
+import getUserRole from "../../services/getUserRole";
 
 const teachersRoutes = express.Router();
 const teacherUpload = imageStoreMiddleware("Teacher");
-
-// Helper functions
-const validateBusiness = async (businessPackageName: string) => {
-  if (!businessPackageName) {
-    throw new Error("Invalid Business Package Name");
-  }
-
-  const business = await Business.findOne({
-    where: { businessPackageName },
-  });
-
-  if (!business?.id) {
-    throw new Error("Business not found");
-  }
-
-  return business;
-};
-
-const getUserRole = async (businessId: string, roleName: string) => {
-  const userRole = await Roles.findOne({
-    where: { businessId, roleName },
-    attributes: ["id", "roleName", "businessId"],
-  });
-
-  if (!userRole?.id) {
-    throw new Error("Role not found");
-  }
-
-  return userRole;
-};
 
 // Create a new teacher
 teachersRoutes.post(

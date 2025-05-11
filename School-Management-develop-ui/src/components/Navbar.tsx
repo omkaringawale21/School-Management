@@ -32,7 +32,7 @@ const Navbar = () => {
         />
       </div>
       {/* INCONS & USERS */}
-      <div className="flex gap-6 items-center gap-6 justify-end w-full">
+      <div className="flex gap-6 items-center justify-end w-full">
         <div className="bg-white rounded-full w-7 h-7 flex justify-center items-center cursor-pointer">
           <Image src={"/message.png"} alt="" width={20} height={20} />
         </div>

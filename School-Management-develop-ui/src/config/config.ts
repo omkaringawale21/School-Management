@@ -21,3 +21,8 @@ export const STUDENT_APIS = {
   DELETE: (id: string | any) => `student/${id}`,
   UPDATE: (id: string | any) => `student/${id}`,
 };
+
+export const PARENT_APIS = {
+  SAVE: "parent/save",
+  ALL: "parent/all",
+}

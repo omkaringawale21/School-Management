@@ -15,6 +15,7 @@ import FileUploadField from "./FileUploadField";
 import MultiSelectDropdown from "./MultiSelect";
 import CloseIcon from "@mui/icons-material/Close";
 import { PICTURE_URL } from "@/config/config";
+import { useGetAllStudentListsQuery } from "@/redux/features/students/students.api";
 
 const options = [
   { key: "Option 1", value: "option1" },
@@ -48,6 +49,19 @@ const ReusableForm: React.FC<ReusableFormProps> = ({
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [fileName, setFileName] = useState<File | null>(null);
 
+  // Student List
+  const { data: studentDetails, isLoading: getStudentsDataLoading } =
+    useGetAllStudentListsQuery?.(undefined);
+
+  const studentDetailsList = Array.isArray(studentDetails?.body)
+    ? studentDetails?.body?.map((student) => {
+        return {
+          key: student?.studentName,
+          value: student?.id,
+        };
+      })
+    : options;
+
   const {
     register,
     handleSubmit,
@@ -79,10 +93,13 @@ const ReusableForm: React.FC<ReusableFormProps> = ({
       setFileName(file);
       setValue(fieldName, file);
     } else {
-      setPreviewUrl(defaultValues.profileUrl ? `${PICTURE_URL}${entity}/${defaultValues.profileUrl}` : null);
+      setPreviewUrl(
+        defaultValues.profileUrl
+          ? `${PICTURE_URL}${entity}/${defaultValues.profileUrl}`
+          : null
+      );
     }
   };
-  
 
   const handleFormSubmit: SubmitHandler<Record<string, any>> = async (data) => {
     try {
@@ -123,6 +140,7 @@ const ReusableForm: React.FC<ReusableFormProps> = ({
           isFileUpload,
           accept,
           iSMultiPleSelectDropdown,
+          multiple = false,
         }) => {
           const value = watch(name);
           const isEmpty = !value;
@@ -151,11 +169,16 @@ const ReusableForm: React.FC<ReusableFormProps> = ({
                 key={name}
                 label={label}
                 name={name}
-                options={options}
+                options={
+                  entity === "Parent" && name === "studentId"
+                    ? studentDetailsList
+                    : options
+                }
                 control={control}
                 isSubmitting={isSubmitting}
                 errors={errors}
                 isEmpty={isEmpty}
+                multiple={multiple}
               />
             );
           }

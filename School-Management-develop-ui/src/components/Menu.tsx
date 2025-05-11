@@ -22,7 +22,7 @@ const menuItems = [
       {
         icon: "/teacher.png",
         label: "Teachers",
-        href: "/list/teachers",
+        href: "/list/teacher",
         visible: [
           `${RoleTitle.ADMIN}`,
           `${RoleTitle.TEACHER}`,
@@ -31,19 +31,19 @@ const menuItems = [
       {
         icon: "/student.png",
         label: "Students",
-        href: "/list/students",
+        href: "/list/student",
         visible: [
           `${RoleTitle.ADMIN}`,
-          `${RoleTitle.TEACHER}`,
+          `${RoleTitle.STUDENT}`,
         ],
       },
       {
         icon: "/parent.png",
         label: "Parents",
-        href: "/list/parents",
+        href: "/list/parent",
         visible: [
           `${RoleTitle.ADMIN}`,
-          `${RoleTitle.TEACHER}`,
+          `${RoleTitle.PARENT}`,
         ],
       },
       {

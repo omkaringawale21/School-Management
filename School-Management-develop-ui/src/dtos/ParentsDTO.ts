@@ -2,7 +2,7 @@ export interface ParentsInterface {
   id?: string | null;
   parentname: string;
   email: string;
-  phoneNumber: string;
+  phoneNumber: number;
   address: string;
   businessId: string;
   studentId: string;
@@ -12,7 +12,7 @@ export interface ParentsInterface {
 export class ParentsDTO {
   public readonly parentname: string;
   public readonly email: string;
-  public readonly phoneNumber: string;
+  public readonly phoneNumber: number;
   public readonly studentId: string;
   public readonly parentPassword: string;
   public readonly address: string;
@@ -20,7 +20,7 @@ export class ParentsDTO {
   constructor(
     parentname: string,
     email: string,
-    phoneNumber: string,
+    phoneNumber: number,
     studentId: string,
     parentPassword: string,
     address: string

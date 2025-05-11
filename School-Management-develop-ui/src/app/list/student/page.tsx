@@ -21,21 +21,21 @@ import { RoleTitle } from "@/enums/RoleTitle";
 import ReusableForm from "@/components/ReusableForm";
 import Modal from "@/components/FormModal";
 import {
-  useCreateTeacherMutation,
-  useDeleteTeacherDetailsMutation,
-  useGetAllTeacherListsQuery,
-  useGetSpecificTeacherDetailsQuery,
-  useUpdateTeacherMutation,
-} from "@/redux/features/teachers/teachers.api";
+  useCreateStudentMutation,
+  useDeleteStudentDetailsMutation,
+  useGetAllStudentListsQuery,
+  useGetSpecificStudentDetailsQuery,
+  useUpdateStudentMutation,
+} from "@/redux/features/students/students.api";
 import { useGlobally } from "@/context/protected.context";
-import { TeacherDTO } from "@/dtos/TeachersDTO";
+import { StudentDTO } from "@/dtos/StudentsDTO";
 import imageCompression from "browser-image-compression";
 import AppLoader from "@/components/AppLoader";
 import { PICTURE_URL } from "@/config/config";
 
-const TeacherHeader = [
+const StudentHeader = [
   "Info",
-  "Teachers ID",
+  "Students ID",
   "Subjects",
   "Classes",
   "Phone",
@@ -43,7 +43,7 @@ const TeacherHeader = [
   "Actions",
 ];
 
-const TeachersLists = () => {
+const StudentLists = () => {
   const [search, setSearch] = useState<string>("");
   const [open, setOpen] = useState<boolean>(false);
   const [page, setPage] = useState<number>(0);
@@ -51,22 +51,22 @@ const TeachersLists = () => {
   const { handleLoadingFalse } = useGlobally();
   const [id, setId] = useState<string>("");
 
-  const [cerateDetails, { isLoading: createTeacherLoading }] =
-    useCreateTeacherMutation();
+  const [cerateDetails, { isLoading: createStudentLoading }] =
+    useCreateStudentMutation();
 
-  const { data: teacherDetails, isLoading: getTeachersDataLoading } =
-    useGetAllTeacherListsQuery?.(undefined);
+  const { data: studentDetails, isLoading: getStudentsDataLoading } =
+    useGetAllStudentListsQuery?.(undefined);
 
   const {
-    data: specificTeacherDetails,
-    isLoading: getSpecificTeacherDataLoading,
-  } = useGetSpecificTeacherDetailsQuery(id, { skip: !id });
+    data: specificStudentDetails,
+    isLoading: getSpecificStudentDataLoading,
+  } = useGetSpecificStudentDetailsQuery(id, { skip: !id });
 
-  const [deleteDetails, { isLoading: deleteTeacherLoading }] =
-    useDeleteTeacherDetailsMutation?.(undefined);
+  const [deleteDetails, { isLoading: deleteStudentLoading }] =
+    useDeleteStudentDetailsMutation?.(undefined);
 
-  const [updateDetails, { isLoading: updateTeacherLoading }] =
-    useUpdateTeacherMutation?.(undefined);
+  const [updateDetails, { isLoading: updateStudentLoading }] =
+    useUpdateStudentMutation?.(undefined);
 
   const createDetails = () => {
     setOpen(true);
@@ -99,7 +99,7 @@ const TeachersLists = () => {
     }
   };
 
-  const getSpecificTeachersdetails = (id: string) => {
+  const getSpecificStudentsdetails = (id: string) => {
     setId(id);
     createDetails();
   };
@@ -107,64 +107,68 @@ const TeachersLists = () => {
   const handleFormSubmit = async (data: any) => {
     try {
       // Validate and transform form data using DTO
-      const teachersData = TeacherDTO.fromInputDTO(data);
-      if (!teachersData) {
-        throw new Error("Invalid teacher data");
+      const studentsData = StudentDTO.fromInputDTO(data);
+      if (!studentsData) {
+        throw new Error("Invalid student data");
       }
-  
+
       // Prepare FormData payload
-      const prepareFormData = async (teacherData: any) => {
+      const prepareFormData = async (studentData: any) => {
         const formData = new FormData();
-        
-        formData.append("teacherName", teacherData.teacherName.trim());
-        formData.append("phoneNumber", teacherData.phoneNumber.trim());
-        formData.append("address", teacherData.address.trim());
-        formData.append("teacherEmail", teacherData.teacherEmail.trim());
-        
-        if (!id && teacherData.teacherPassword) {
-          formData.append("teacherPassword", teacherData.teacherPassword);
+
+        formData.append("studentName", studentData.studentName.trim());
+        formData.append("phoneNumber", studentData.phoneNumber.trim());
+        formData.append("address", studentData.address.trim());
+        formData.append("studentEmail", studentData.studentEmail.trim());
+
+        if (!id && studentData.studentPassword) {
+          formData.append("studentPassword", studentData.studentPassword);
         }
-  
+
         formData.append(
-          "subject", 
+          "subject",
           JSON.stringify(
-            Array.isArray(teacherData.subject) 
-              ? teacherData.subject 
-              : [teacherData.subject].filter(Boolean)
-        ));
-        
-        formData.append(
-          "classList", 
-          JSON.stringify(
-            Array.isArray(teacherData.classList) 
-              ? teacherData.classList 
-              : [teacherData.classList].filter(Boolean)
+            Array.isArray(studentData.subject)
+              ? studentData.subject
+              : [studentData.subject].filter(Boolean)
           )
         );
-  
+
+        formData.append(
+          "classList",
+          JSON.stringify(
+            Array.isArray(studentData.classList)
+              ? studentData.classList
+              : [studentData.classList].filter(Boolean)
+          )
+        );
+
         // Handle profile image if present
-        if (teacherData.profileUrl instanceof File) {
+        if (studentData.profileUrl instanceof File) {
           try {
-            const compressedImage = await compressImage(teacherData.profileUrl);
+            const compressedImage = await compressImage(studentData.profileUrl);
             formData.append("profileUrl", compressedImage);
           } catch (compressError) {
-            console.warn("Image compression failed, using original", compressError);
-            formData.append("profileUrl", teacherData.profileUrl);
+            console.warn(
+              "Image compression failed, using original",
+              compressError
+            );
+            formData.append("profileUrl", studentData.profileUrl);
           }
-        } else if (typeof teacherData.profileUrl === 'string') {
-          formData.append("profileUrl", teacherData.profileUrl);
+        } else if (typeof studentData.profileUrl === "string") {
+          formData.append("profileUrl", studentData.profileUrl);
         }
-  
+
         return formData;
       };
-  
-      const payloadForm = await prepareFormData(teachersData);
+
+      const payloadForm = await prepareFormData(studentsData);
       if (id) {
-        const response = await updateDetails({ 
-          teacherDetails: payloadForm, 
-          id 
+        const response = await updateDetails({
+          studentDetails: payloadForm,
+          id,
         }).unwrap();
-        
+
         if (response.status === 200) {
           closeModal();
           setId("");
@@ -175,9 +179,8 @@ const TeachersLists = () => {
           closeModal();
         }
       }
-  
     } catch (error) {
-      console.error("Teacher operation failed:", error);
+      console.error("Student operation failed:", error);
     } finally {
       handleLoadingFalse?.();
     }
@@ -188,14 +191,12 @@ const TeachersLists = () => {
       allowedRoles={[
         `${RoleTitle.ADMIN}`,
         `${RoleTitle.STUDENT}`,
-        `${RoleTitle.TEACHER}`,
-        `${RoleTitle.PARENT}`,
       ]}
-      validRoutes={["/list/teachers"]}
+      validRoutes={["/list/student"]}
     >
       <div className="bg-white p-4 rounded-md m-2 min-h-[100vh]">
         <ListNavbar
-          title="All Teachers"
+          title="All Students"
           createDetails={createDetails}
           searchText={search}
           setSearch={setSearch}
@@ -207,17 +208,17 @@ const TeachersLists = () => {
               className="rounded-md w-full overflow-x-auto"
               aria-labelledby="tableTitle"
             >
-              <UseTable headerLists={TeacherHeader} />
+              <UseTable headerLists={StudentHeader} />
               <TableBody>
-                {teacherDetails?.body.length > 0 ? (
-                  teacherDetails?.body
+                {studentDetails?.body.length > 0 ? (
+                  studentDetails?.body
                     .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
                     .filter((filterData: any) => {
                       return (
-                        filterData?.teacherName
+                        filterData?.studentName
                           ?.toLowerCase()
                           ?.includes(search?.toLowerCase()) ||
-                        filterData?.teacherEmail
+                        filterData?.studentEmail
                           ?.toLowerCase()
                           ?.includes(search?.toLowerCase())
                       );
@@ -228,17 +229,17 @@ const TeachersLists = () => {
                           <div className="flex justify-between items-center gap-4 w-full">
                             <div className="flex flex-col">
                               <span className="text-md font-light text-gray-500">
-                                {bodyData.teacherName}
+                                {bodyData.studentName}
                               </span>
                               <span className="text-sm text-gray-500">
-                                {bodyData.teacherEmail}
+                                {bodyData.studentEmail}
                               </span>
                             </div>
                             <div className="w-8 h-8">
                               {bodyData.profileUrl ? (
                                 <img
-                                  src={`${PICTURE_URL}Teacher/${bodyData.profileUrl}`}
-                                  alt={`${bodyData.teacherName}'s photo`}
+                                  src={`${PICTURE_URL}Student/${bodyData.profileUrl}`}
+                                  alt={`${bodyData.studentName}'s photo`}
                                   className="rounded-full object-cover"
                                 />
                               ) : (
@@ -292,7 +293,7 @@ const TeachersLists = () => {
                             <div
                               className="w-[36px] h-[36px] bg-cyan-500 rounded-full flex justify-center items-center hover:opacity-55 cursor-pointer"
                               onClick={() =>
-                                getSpecificTeachersdetails(bodyData.id)
+                                getSpecificStudentsdetails(bodyData.id)
                               }
                             >
                               <Edit
@@ -323,7 +324,7 @@ const TeachersLists = () => {
                     ))
                 ) : (
                   <TableRow>
-                    <TableCell colSpan={TeacherHeader.length}>
+                    <TableCell colSpan={StudentHeader.length}>
                       <div className="flex justify-center items-center w-full text-md">
                         No Results
                       </div>
@@ -336,7 +337,7 @@ const TeachersLists = () => {
           <TablePagination
             rowsPerPageOptions={[5, 10, 25]}
             component="div"
-            count={teacherDetails?.body?.length || 0}
+            count={studentDetails?.body?.length || 0}
             rowsPerPage={rowsPerPage}
             page={page}
             onPageChange={handleChangePage}
@@ -351,24 +352,24 @@ const TeachersLists = () => {
             closeModal={closeModal}
             children={
               <ReusableForm
-                entity="Teacher"
+                entity="Student"
                 onSubmit={handleFormSubmit}
                 handleClose={closeModal}
-                defaultValues={id ? { ...specificTeacherDetails?.body } : {}}
+                defaultValues={id ? { ...specificStudentDetails?.body } : {}}
               />
             }
-            title={"Teacher"}
+            title={"Student"}
             maxHeight="70vh"
           />
         )}
       </div>
-      {(createTeacherLoading ||
-        getTeachersDataLoading ||
-        deleteTeacherLoading ||
-        updateTeacherLoading ||
-        getSpecificTeacherDataLoading) && <AppLoader />}
+      {(createStudentLoading ||
+        getStudentsDataLoading ||
+        deleteStudentLoading ||
+        updateStudentLoading ||
+        getSpecificStudentDataLoading) && <AppLoader />}
     </ProtectedRoute>
   );
 };
 
-export default TeachersLists;
+export default StudentLists;

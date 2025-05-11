@@ -9,6 +9,7 @@ import authRoutes from "./routes/auth.routes/auth.routes";
 import cors from "cors";
 import teachersRoutes from "./routes/teachers.routes/teachers.routes";
 import studentsRoutes from "./routes/students.routes/students.routes";
+import parentsRoutes from './routes/parents.routes/parents.routes';
 
 const app = express();
 
@@ -38,6 +39,8 @@ app.use("/api", authRoutes);
 app.use("/api/teacher", teachersRoutes);
 // Students routes
 app.use("/api/student", studentsRoutes);
+// Parents routes
+app.use("/api/parent", parentsRoutes);
 
 app.use("/Teacher", express.static(path.join(__dirname, "uploads/Teacher")));
 app.use("/Student", express.static(path.join(__dirname, "uploads/Student")));

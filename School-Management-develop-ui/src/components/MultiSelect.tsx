@@ -20,11 +20,12 @@ interface MultiSelectDropdownProps<T> {
   name: string;
   options: Option<T>[];
   control: Control<any>;
-  defaultValue?: T[];
+  defaultValue?: T[] | T; // Handle both single and multi
   isSubmitting?: boolean;
   errors?: any;
   isEmpty?: boolean;
   isRequired?: boolean;
+  multiple?: boolean; // To switch between single and multi-select
 }
 
 const MultiSelectDropdown = <T,>({
@@ -37,6 +38,7 @@ const MultiSelectDropdown = <T,>({
   errors,
   isEmpty,
   isRequired = false,
+  multiple = true, // Default to multi-select
 }: MultiSelectDropdownProps<T>) => {
   return (
     <div>
@@ -52,23 +54,38 @@ const MultiSelectDropdown = <T,>({
           required: isRequired ? "This field is required" : false,
         }}
         render={({ field: { onChange, value } }) => {
-          const handleChange = (event: SelectChangeEvent<string[]>) => {
-            const values = event.target.value as string[];
-            const selectedValues = options
-              .filter((option) => values.includes(option.key))
-              .map((option) => option.value);
-            onChange(selectedValues);
+          const handleChange = (event: SelectChangeEvent<any>) => {
+            if (multiple) {
+              // Handle multi-select
+              const values = event.target.value as string[];
+              const selectedValues = options
+                .filter((option) => values.includes(option.key))
+                .map((option) => option.value);
+              onChange(selectedValues);
+            } else {
+              // Handle single-select
+              const selectedValue = options.find(
+                (option) => option.key === event.target.value
+              )?.value;
+              onChange(selectedValue);
+            }
           };
 
           return (
             <>
               <Select
-                multiple
-                value={options
-                  .filter((option) => value?.includes(option.value))
-                  .map((option) => option.key)}
+                multiple={multiple}
+                value={
+                  multiple
+                    ? options
+                        .filter((option) => value?.includes(option.value))
+                        .map((option) => option.key)
+                    : value
+                }
                 onChange={handleChange}
-                renderValue={(selected) => selected.join(", ")}
+                renderValue={(selected) =>
+                  multiple ? selected.join(", ") : selected
+                }
                 disabled={isSubmitting}
                 placeholder={label}
                 error={!!errors[name]}
@@ -105,7 +122,9 @@ const MultiSelectDropdown = <T,>({
               >
                 {options.map((option) => (
                   <MenuItem key={option.key} value={option.key}>
-                    <Checkbox checked={value?.includes(option.value)} />
+                    {multiple && (
+                      <Checkbox checked={value?.includes(option.value)} />
+                    )}
                     <ListItemText primary={option.key} />
                   </MenuItem>
                 ))}

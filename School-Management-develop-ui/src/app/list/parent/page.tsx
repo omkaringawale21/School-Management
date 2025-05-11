@@ -18,6 +18,12 @@ import { Delete, Edit } from "@mui/icons-material";
 import { RoleTitle } from "@/enums/RoleTitle";
 import ReusableForm from "@/components/ReusableForm";
 import Modal from "@/components/FormModal";
+import {
+  useGetAllParentsListsQuery,
+  useCreateParentMutation,
+} from "@/redux/features/parents/parents.api";
+import { ParentsDTO } from "@/dtos/ParentsDTO";
+import AppLoader from "@/components/AppLoader";
 
 const ParentsHeader = ["Info", "Students", "Phone", "Address", "Actions"];
 
@@ -26,6 +32,13 @@ const ParentsLists = () => {
   const [open, setOpen] = useState<boolean>(false);
   const [page, setPage] = useState<number>(0);
   const [rowsPerPage, setRowsPerPage] = useState<number>(5);
+
+  const { data: parentDetails, isLoading: getParentsDataLoading } =
+    useGetAllParentsListsQuery?.(undefined);
+
+  const [cerateDetails, { isLoading: createParentLoading }] =
+    useCreateParentMutation();
+
   const createDetails = () => {
     setOpen(true);
   };
@@ -45,21 +58,23 @@ const ParentsLists = () => {
     setPage(0);
   };
 
-  const handleFormSubmit = (data: any) => {
-    console.log(data);
-    for (let [key, value] of data.entries()) {
-      console.log(key, value);
+  const handleFormSubmit = async (data: any) => {
+    if (Object.keys(data).length) {
+      const parentData = ParentsDTO.fromInputDTO(data);
+      if (!parentData) {
+        throw new Error("Invalid parent data");
+      }
+      const response = await cerateDetails(data).unwrap();
+      if (response.status === 200) {
+        closeModal();
+      }
     }
   };
 
   return (
     <ProtectedRoute
-      allowedRoles={[
-        `${RoleTitle.ADMIN}`,
-        `${RoleTitle.TEACHER}`,
-        `${RoleTitle.PARENT}`,
-      ]}
-      validRoutes={["/list/parents"]}
+      allowedRoles={[`${RoleTitle.ADMIN}`, `${RoleTitle.PARENT}`]}
+      validRoutes={["/list/parent"]}
     >
       <div className="bg-white p-4 rounded-md m-2 min-h-[100vh]">
         <ListNavbar
@@ -76,8 +91,8 @@ const ParentsLists = () => {
             >
               <UseTable headerLists={ParentsHeader} />
               <TableBody>
-                {parentsData.length > 0 ? (
-                  parentsData
+                {parentDetails?.body?.length > 0 ? (
+                  parentDetails?.body
                     .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
                     .filter((filterData: any) => {
                       return (
@@ -105,12 +120,12 @@ const ParentsLists = () => {
                         </TableCell>
                         <TableCell>
                           <div className="text-md font-thin text-gray-500">
-                            {bodyData.students?.join(", ")}
+                            {bodyData.students.studentName}
                           </div>
                         </TableCell>
                         <TableCell>
                           <div className="text-md font-thin text-gray-500">
-                            {bodyData.phone}
+                            {bodyData.phoneNumber}
                           </div>
                         </TableCell>
                         <TableCell>
@@ -181,6 +196,7 @@ const ParentsLists = () => {
           />
         )}
       </div>
+      {(getParentsDataLoading || createParentLoading) && <AppLoader />}
     </ProtectedRoute>
   );
 };

@@ -12,10 +12,16 @@ export type FormSchema = {
 
 export const formSchemas: FormSchema = {
   Parent: [
-    { name: "parentName", label: "Parent Name", type: "text", },
-    { name: "parentEmail", label: "Email", type: "email" },
-    { name: "studentName", label: "Student Name", type: "text" },
-    { name: "phone", label: "Phone", type: "tel" },
+    { name: "parentname", label: "Parent Name", type: "text" },
+    { name: "parentPassword", label: "Password", type: "password" },
+    { name: "email", label: "Email", type: "email" },
+    {
+      name: "studentId",
+      label: "Student Name",
+      iSMultiPleSelectDropdown: true,
+      multiple: false,
+    },
+    { name: "phoneNumber", label: "Phone", type: "tel" },
     { name: "address", label: "Address", type: "text" },
   ],
   Student: [
@@ -49,6 +55,7 @@ export const formSchemas: FormSchema = {
       name: "subject",
       label: "Subject",
       iSMultiPleSelectDropdown: true,
+      multiple: false,
     },
     {
       name: "classList",
@@ -70,6 +77,7 @@ export const formSchemas: FormSchema = {
       name: "teacherList",
       label: "Tesacher List",
       iSMultiPleSelectDropdown: true,
+      multiple: true,
     },
   ],
   Class: [
