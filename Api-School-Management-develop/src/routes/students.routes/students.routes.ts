@@ -44,8 +44,24 @@ studentsRoutes.post(
       // Validate business
       const business = await validateBusiness(businessPackageName);
 
+      if (!business) {
+        return res.status(404).json({
+          message: "Business not found!",
+          status: 400,
+          body: null,
+        });
+      }
+
       // Get student role
       const userRole = await getUserRole(business.id, ROLES.STUDENTS);
+
+      if (!userRole) {
+        return res.status(404).json({
+          message: "User role not found!",
+          status: 400,
+          body: null,
+        });
+      }
 
       // Create user account
       const userDetails = await Users.create({
@@ -79,7 +95,7 @@ studentsRoutes.post(
     } catch (error: any) {
       console.error("Student creation error:", error);
       return res.status(400).json({
-        message: error.message || "Student registration failed",
+        message: "Student registration failed",
         status: 400,
         body: null,
       });
@@ -88,9 +104,23 @@ studentsRoutes.post(
 );
 
 // Get all students
-studentsRoutes.get("/all", async (_req: any, res: any) => {
+studentsRoutes.get("/all", async (req: any, res: any) => {
   try {
+    const businessPackageName = req.headers.businesspackagename as string;
+
+    // Validate business
+    const business = await validateBusiness(businessPackageName);
+
+    if (!business) {
+      return res.status(404).json({
+        message: "Business not found!",
+        status: 400,
+        body: null,
+      });
+    }
+
     const students = await Students.findAll({
+      where: { businessId: business?.id },
       include: [Users],
     });
 
@@ -122,11 +152,11 @@ studentsRoutes.get("/:id", async (req: any, res: any) => {
       });
     }
 
-    const students = await Students.findOne({
+    const student = await Students.findOne({
       where: { id },
     });
 
-    if (!students) {
+    if (!student) {
       return res.status(404).json({
         message: "Student not found",
         status: 404,
@@ -137,7 +167,7 @@ studentsRoutes.get("/:id", async (req: any, res: any) => {
     return res.status(200).json({
       message: "Student retrieved successfully",
       status: 200,
-      body: students,
+      body: student,
     });
   } catch (error) {
     console.error("Get student error:", error);
@@ -163,9 +193,9 @@ studentsRoutes.delete("/:id", async (req: any, res: any) => {
     }
 
     // Get student to find associated user
-    const students = await Students.findOne({ where: { id } });
+    const student = await Students.findOne({ where: { id } });
 
-    if (!students) {
+    if (!student) {
       return res.status(404).json({
         message: "Student not found",
         status: 404,
@@ -177,8 +207,8 @@ studentsRoutes.delete("/:id", async (req: any, res: any) => {
     await Students.destroy({ where: { id } });
 
     // Also delete associated user account if exists
-    if (students.userId) {
-      await Users.destroy({ where: { id: students.userId } });
+    if (student.userId) {
+      await Users.destroy({ where: { id: student.userId } });
     }
 
     return res.status(200).json({
@@ -214,11 +244,11 @@ studentsRoutes.put(
       const businessPackageName = req.headers.businesspackagename as string;
       const business = await validateBusiness(businessPackageName);
 
-      const students = await Students.findOne({
+      const student = await Students.findOne({
         where: { id, businessId: business.id },
       });
 
-      if (!students) {
+      if (!student) {
         return res.status(404).json({
           message: "Student not found",
           status: 404,
@@ -228,16 +258,16 @@ studentsRoutes.put(
 
       // Parse incoming data
       const updateData = {
-        studentName: req.body.studentName || students.studentName,
-        phoneNumber: req.body.phoneNumber || students.phoneNumber,
-        address: req.body.address || students.address,
-        studentEmail: req.body.studentEmail || students.studentEmail,
-        profileUrl: req.file?.filename || students.profileUrl,
+        studentName: req.body.studentName || student.studentName,
+        phoneNumber: req.body.phoneNumber || student.phoneNumber,
+        address: req.body.address || student.address,
+        studentEmail: req.body.studentEmail || student.studentEmail,
+        profileUrl: req.file?.filename || student.profileUrl,
       };
 
       await Students.update(updateData, { where: { id } });
 
-      if (students.userId) {
+      if (student.userId) {
         await Users.update(
           {
             email: updateData.studentEmail,
@@ -246,7 +276,7 @@ studentsRoutes.put(
               ? { password: req.body.studentPassword }
               : {}),
           },
-          { where: { id: students.userId } }
+          { where: { id: student.userId } }
         );
       }
 

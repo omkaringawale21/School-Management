@@ -2,7 +2,6 @@
 
 import ListNavbar from "@/components/ListNavbar";
 import UseTable from "@/components/UseTable";
-import { parentsData } from "@/lib/data";
 import ProtectedRoute from "@/protected.routes/protected.routes";
 import {
   Paper,
@@ -21,6 +20,9 @@ import Modal from "@/components/FormModal";
 import {
   useGetAllParentsListsQuery,
   useCreateParentMutation,
+  useDeleteParentMutation,
+  useGetSpecificParentDetailsQuery,
+  useUpdateParentMutation,
 } from "@/redux/features/parents/parents.api";
 import { ParentsDTO } from "@/dtos/ParentsDTO";
 import AppLoader from "@/components/AppLoader";
@@ -32,12 +34,24 @@ const ParentsLists = () => {
   const [open, setOpen] = useState<boolean>(false);
   const [page, setPage] = useState<number>(0);
   const [rowsPerPage, setRowsPerPage] = useState<number>(5);
+  const [id, setId] = useState<string>("");
 
   const { data: parentDetails, isLoading: getParentsDataLoading } =
     useGetAllParentsListsQuery?.(undefined);
 
   const [cerateDetails, { isLoading: createParentLoading }] =
     useCreateParentMutation();
+
+  const [deleteDetails, { isLoading: deleteParentLoading }] =
+    useDeleteParentMutation();
+
+  const {
+    data: specificParentDetails,
+    isLoading: getSpecificParentDataLoading,
+  } = useGetSpecificParentDetailsQuery(id, { skip: !id });
+
+  const [updateDetails, { isLoading: updateParentLoading }] =
+    useUpdateParentMutation?.(undefined);
 
   const createDetails = () => {
     setOpen(true);
@@ -58,15 +72,33 @@ const ParentsLists = () => {
     setPage(0);
   };
 
+  const getSpecificParentDetails = (id: string) => {
+    setId(id);
+    createDetails();
+  };
+
   const handleFormSubmit = async (data: any) => {
     if (Object.keys(data).length) {
       const parentData = ParentsDTO.fromInputDTO(data);
       if (!parentData) {
         throw new Error("Invalid parent data");
       }
-      const response = await cerateDetails(data).unwrap();
-      if (response.status === 200) {
-        closeModal();
+
+      if (id) {
+        const response = await updateDetails({
+          parentsDetails: data,
+          id,
+        }).unwrap();
+
+        if (response.status === 200) {
+          closeModal();
+          setId("");
+        }
+      } else {
+        const response = await cerateDetails(data).unwrap();
+        if (response.status === 200) {
+          closeModal();
+        }
       }
     }
   };
@@ -79,9 +111,13 @@ const ParentsLists = () => {
       <div className="bg-white p-4 rounded-md m-2 min-h-[100vh]">
         <ListNavbar
           title="All Parents"
-          createDetails={createDetails}
+          createDetails={() => {
+            createDetails();
+            setId("");
+          }}
           searchText={search}
           setSearch={setSearch}
+          setId={setId}
         />
         <Paper className="w-full">
           <TableContainer className="w-full">
@@ -135,7 +171,12 @@ const ParentsLists = () => {
                         </TableCell>
                         <TableCell>
                           <div className="flex justify-around items-center">
-                            <div className="w-[36px] h-[36px] bg-cyan-500 rounded-full flex justify-center items-center hover:opacity-55 cursor-pointer">
+                            <div
+                              className="w-[36px] h-[36px] bg-cyan-500 rounded-full flex justify-center items-center hover:opacity-55 cursor-pointer"
+                              onClick={() =>
+                                getSpecificParentDetails(bodyData.id)
+                              }
+                            >
                               <Edit
                                 className="text-white"
                                 sx={{
@@ -144,7 +185,12 @@ const ParentsLists = () => {
                                 }}
                               />
                             </div>
-                            <div className="w-[36px] h-[36px] bg-cyan-700 rounded-full flex justify-center items-center cursor-pointer hover:opacity-55">
+                            <div
+                              className="w-[36px] h-[36px] bg-cyan-700 rounded-full flex justify-center items-center cursor-pointer hover:opacity-55"
+                              onClick={() => {
+                                deleteDetails(bodyData?.id);
+                              }}
+                            >
                               <Delete
                                 className="text-white"
                                 sx={{
@@ -172,7 +218,7 @@ const ParentsLists = () => {
           <TablePagination
             rowsPerPageOptions={[5, 10, 25]}
             component="div"
-            count={parentsData.length}
+            count={parentDetails?.data?.length}
             rowsPerPage={rowsPerPage}
             page={page}
             onPageChange={handleChangePage}
@@ -190,13 +236,18 @@ const ParentsLists = () => {
                 entity="Parent"
                 onSubmit={handleFormSubmit}
                 handleClose={closeModal}
+                defaultValues={id ? { ...specificParentDetails?.body } : {}}
               />
             }
             title={"Student"}
           />
         )}
       </div>
-      {(getParentsDataLoading || createParentLoading) && <AppLoader />}
+      {(getParentsDataLoading ||
+        createParentLoading ||
+        deleteParentLoading ||
+        getSpecificParentDataLoading ||
+        updateParentLoading) && <AppLoader />}
     </ProtectedRoute>
   );
 };

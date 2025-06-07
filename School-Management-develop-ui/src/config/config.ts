@@ -25,4 +25,23 @@ export const STUDENT_APIS = {
 export const PARENT_APIS = {
   SAVE: "parent/save",
   ALL: "parent/all",
-}
+  DELETE: (id: string | any) => `parent/${id}`,
+  GET: (id: string | any) => `parent/${id}`,
+  UPDATE: (id: string | any) => `parent/${id}`,
+};
+
+export const SUBJECT_APIS = {
+  SAVE: "subject/save",
+  ALL: "subject/all",
+  GET: (id: string | any) => `subject/${id}`,
+  UPDATE: (id: string | any) => `subject/${id}`,
+  DELETE: (id: string | any) => `subject/${id}`,
+};
+
+export const CLASSES_APIS = {
+  SAVE: "class/save",
+  ALL: "class/all",
+  GET: (id: string | any) => `class/${id}`,
+  UPDATE: (id: string | any) => `class/${id}`,
+  DELETE: (id: string | any) => `class/${id}`,
+};

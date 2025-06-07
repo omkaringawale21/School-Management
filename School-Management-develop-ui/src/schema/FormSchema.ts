@@ -72,19 +72,24 @@ export const formSchemas: FormSchema = {
     },
   ],
   Subject: [
-    { name: "name", label: "Subject Name", type: "text" },
+    { name: "subjectName", label: "Subject Name", type: "text" },
     {
-      name: "teacherList",
-      label: "Tesacher List",
+      name: "teacherId",
+      label: "Teacher List",
       iSMultiPleSelectDropdown: true,
       multiple: true,
     },
   ],
   Class: [
-    { name: "name", label: "Class Name", type: "text" },
-    { name: "capacity", label: "Capacity", type: "text" },
-    { name: "grade", label: "Grade", type: "text" },
-    { name: "supervisor", label: "Supervisor", type: "text" },
+    { name: "className", label: "Class Name", type: "text" },
+    { name: "classCapacity", label: "Capacity", type: "text" },
+    { name: "classGrade", label: "Grade", type: "text" },
+    {
+      name: "classSupervisor",
+      label: "Supervisor",
+      iSMultiPleSelectDropdown: true,
+      multiple: false,
+    },
   ],
   Lesson: [
     { name: "name", label: "Subject Name", type: "text" },

@@ -1,7 +1,8 @@
 export interface ClassesI {
-    id?: string;
-    classDiv?: string;
-    classStandard?: string;
-    classIntake?: string;
-    classSupervisor?: string;
+  id?: string;
+  className?: string;
+  classCapacity?: string;
+  classGrade?: string;
+  classSupervisor?: string;
+  businessId?: string;
 }

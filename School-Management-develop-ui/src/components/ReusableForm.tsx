@@ -16,6 +16,7 @@ import MultiSelectDropdown from "./MultiSelect";
 import CloseIcon from "@mui/icons-material/Close";
 import { PICTURE_URL } from "@/config/config";
 import { useGetAllStudentListsQuery } from "@/redux/features/students/students.api";
+import { useGetAllTeacherListsQuery } from "@/redux/features/teachers/teachers.api";
 
 const options = [
   { key: "Option 1", value: "option1" },
@@ -53,11 +54,26 @@ const ReusableForm: React.FC<ReusableFormProps> = ({
   const { data: studentDetails, isLoading: getStudentsDataLoading } =
     useGetAllStudentListsQuery?.(undefined);
 
+  // Teacher List
+  const { data: teacherDetails, isLoading: getTeachersDataLoading } =
+    useGetAllTeacherListsQuery?.(undefined);
+
+  // Student List
   const studentDetailsList = Array.isArray(studentDetails?.body)
     ? studentDetails?.body?.map((student) => {
         return {
           key: student?.studentName,
           value: student?.id,
+        };
+      })
+    : options;
+
+  // Teacher List
+  const teacherDetailsList = Array.isArray(teacherDetails?.body)
+    ? teacherDetails?.body?.map((teacher) => {
+        return {
+          key: teacher?.teacherName,
+          value: teacher?.id,
         };
       })
     : options;
@@ -172,6 +188,10 @@ const ReusableForm: React.FC<ReusableFormProps> = ({
                 options={
                   entity === "Parent" && name === "studentId"
                     ? studentDetailsList
+                    : entity === "Subject" && name === "teacherId"
+                    ? teacherDetailsList
+                    : entity === "Class" && name === "classSupervisor"
+                    ? teacherDetailsList
                     : options
                 }
                 control={control}

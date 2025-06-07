@@ -21,7 +21,7 @@ export const parentsApi = createApi({
         headers: {
           businessPackageName: "private@school",
         },
-        invalidatesTags: ["parentsList"],
+        providedTags: ["parentsList"],
       }),
     }),
     createParent: builder.mutation<ParentsResponse, any>({
@@ -42,7 +42,57 @@ export const parentsApi = createApi({
             ) as any;
           }
         } catch (error) {
-          console.error("Error creating teacher:", error);
+          console.error("Error creating parent:", error);
+          return error;
+        }
+      },
+      invalidatesTags: ["parentsList"],
+    }),
+    deleteParent: builder.mutation<ParentsResponse, any>({
+      query: (id) => ({
+        url: PARENT_APIS.DELETE(id),
+        method: "DELETE",
+        headers: {
+          businessPackageName: "private@school",
+        },
+        body: {},
+      }),
+      invalidatesTags: ["parentsList"],
+    }),
+    getSpecificParentDetails: builder.query<ParentsResponse, any>({
+      query: (id) => ({
+        url: PARENT_APIS.GET(id),
+        method: "GET",
+        headers: {
+          businessPackageName: "private@school",
+        },
+        providedTags: ["parentsList"],
+      }),
+    }),
+
+    updateParent: builder.mutation<
+      ParentsResponse,
+      { parentsDetails: any; id: string }
+    >({
+      query: ({ parentsDetails, id }) => ({
+        url: PARENT_APIS.UPDATE(id),
+        method: "PUT",
+        headers: {
+          businessPackageName: "private@school",
+        },
+        body: parentsDetails,
+      }),
+      async onQueryStarted(_args, { dispatch, queryFulfilled }) {
+        try {
+          const result = await queryFulfilled;
+          if (result?.data?.status === 200) {
+            dispatch(
+              parentsApi.endpoints.getAllParentsLists?.initiate(undefined)
+            ) as any;
+          }
+        } catch (error) {
+          console.error("Error updating parent:", error);
+          return error;
         }
       },
       invalidatesTags: ["parentsList"],
@@ -50,5 +100,10 @@ export const parentsApi = createApi({
   }),
 });
 
-export const { useGetAllParentsListsQuery, useCreateParentMutation } =
-  parentsApi;
+export const {
+  useGetAllParentsListsQuery,
+  useCreateParentMutation,
+  useDeleteParentMutation,
+  useGetSpecificParentDetailsQuery,
+  useUpdateParentMutation,
+} = parentsApi;

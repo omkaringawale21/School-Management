@@ -99,7 +99,7 @@ const StudentLists = () => {
     }
   };
 
-  const getSpecificStudentsdetails = (id: string) => {
+  const getSpecificStudentDetails = (id: string) => {
     setId(id);
     createDetails();
   };
@@ -188,16 +188,16 @@ const StudentLists = () => {
 
   return (
     <ProtectedRoute
-      allowedRoles={[
-        `${RoleTitle.ADMIN}`,
-        `${RoleTitle.STUDENT}`,
-      ]}
+      allowedRoles={[`${RoleTitle.ADMIN}`, `${RoleTitle.STUDENT}`]}
       validRoutes={["/list/student"]}
     >
       <div className="bg-white p-4 rounded-md m-2 min-h-[100vh]">
         <ListNavbar
           title="All Students"
-          createDetails={createDetails}
+          createDetails={() => {
+            createDetails();
+            setId("");
+          }}
           searchText={search}
           setSearch={setSearch}
           setId={setId}
@@ -293,7 +293,7 @@ const StudentLists = () => {
                             <div
                               className="w-[36px] h-[36px] bg-cyan-500 rounded-full flex justify-center items-center hover:opacity-55 cursor-pointer"
                               onClick={() =>
-                                getSpecificStudentsdetails(bodyData.id)
+                                getSpecificStudentDetails(bodyData.id)
                               }
                             >
                               <Edit

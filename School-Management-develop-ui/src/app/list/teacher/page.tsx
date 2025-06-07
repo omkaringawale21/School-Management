@@ -111,60 +111,62 @@ const TeachersLists = () => {
       if (!teachersData) {
         throw new Error("Invalid teacher data");
       }
-  
       // Prepare FormData payload
       const prepareFormData = async (teacherData: any) => {
         const formData = new FormData();
-        
+
         formData.append("teacherName", teacherData.teacherName.trim());
         formData.append("phoneNumber", teacherData.phoneNumber.trim());
         formData.append("address", teacherData.address.trim());
         formData.append("teacherEmail", teacherData.teacherEmail.trim());
-        
+
         if (!id && teacherData.teacherPassword) {
           formData.append("teacherPassword", teacherData.teacherPassword);
         }
-  
+
         formData.append(
-          "subject", 
+          "subject",
           JSON.stringify(
-            Array.isArray(teacherData.subject) 
-              ? teacherData.subject 
+            Array.isArray(teacherData.subject)
+              ? teacherData.subject
               : [teacherData.subject].filter(Boolean)
-        ));
-        
+          )
+        );
+
         formData.append(
-          "classList", 
+          "classList",
           JSON.stringify(
-            Array.isArray(teacherData.classList) 
-              ? teacherData.classList 
+            Array.isArray(teacherData.classList)
+              ? teacherData.classList
               : [teacherData.classList].filter(Boolean)
           )
         );
-  
+
         // Handle profile image if present
         if (teacherData.profileUrl instanceof File) {
           try {
             const compressedImage = await compressImage(teacherData.profileUrl);
             formData.append("profileUrl", compressedImage);
           } catch (compressError) {
-            console.warn("Image compression failed, using original", compressError);
+            console.warn(
+              "Image compression failed, using original",
+              compressError
+            );
             formData.append("profileUrl", teacherData.profileUrl);
           }
-        } else if (typeof teacherData.profileUrl === 'string') {
+        } else if (typeof teacherData.profileUrl === "string") {
           formData.append("profileUrl", teacherData.profileUrl);
         }
-  
+
         return formData;
       };
-  
       const payloadForm = await prepareFormData(teachersData);
       if (id) {
-        const response = await updateDetails({ 
-          teacherDetails: payloadForm, 
-          id 
+        const response = await updateDetails({
+          teacherDetails: payloadForm,
+          id,
         }).unwrap();
-        
+
         if (response.status === 200) {
           closeModal();
           setId("");
@@ -175,7 +177,6 @@ const TeachersLists = () => {
           closeModal();
         }
       }
-  
     } catch (error) {
       console.error("Teacher operation failed:", error);
     } finally {
@@ -185,16 +186,16 @@ const TeachersLists = () => {
 
   return (
     <ProtectedRoute
-      allowedRoles={[
-        `${RoleTitle.ADMIN}`,
-        `${RoleTitle.TEACHER}`,
-      ]}
+      allowedRoles={[`${RoleTitle.ADMIN}`, `${RoleTitle.TEACHER}`]}
       validRoutes={["/list/teacher"]}
     >
       <div className="bg-white p-4 rounded-md m-2 min-h-[100vh]">
         <ListNavbar
           title="All Teachers"
-          createDetails={createDetails}
+          createDetails={() => {
+            createDetails();
+            setId("");
+          }}
           searchText={search}
           setSearch={setSearch}
           setId={setId}

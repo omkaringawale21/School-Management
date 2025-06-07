@@ -45,8 +45,24 @@ teachersRoutes.post(
       // Validate business
       const business = await validateBusiness(businessPackageName);
 
+      if (!business) {
+        return res.status(404).json({
+          message: "Business not found!",
+          status: 400,
+          body: null,
+        });
+      }
+
       // Get teacher role
       const userRole = await getUserRole(business.id, ROLES.TEACHERS);
+
+      if (!userRole) {
+        return res.status(404).json({
+          message: "User role not found!",
+          status: 400,
+          body: null,
+        });
+      }
 
       // Create user account
       const userDetails = await Users.create({
@@ -80,7 +96,7 @@ teachersRoutes.post(
     } catch (error: any) {
       console.error("Teacher creation error:", error);
       return res.status(400).json({
-        message: error.message || "Teacher registration failed",
+        message: "Teacher registration failed",
         status: 400,
         body: null,
       });
@@ -89,9 +105,23 @@ teachersRoutes.post(
 );
 
 // Get all teachers
-teachersRoutes.get("/all", async (_req: any, res: any) => {
+teachersRoutes.get("/all", async (req: any, res: any) => {
   try {
+    const businessPackageName = req.headers.businesspackagename as string;
+
+    // Validate business
+    const business = await validateBusiness(businessPackageName);
+
+    if (!business) {
+      return res.status(404).json({
+        message: "Business not found!",
+        status: 400,
+        body: null,
+      });
+    }
+
     const teachers = await Teachers.findAll({
+      where: { businessId: business?.id },
       include: [Users],
     });
 

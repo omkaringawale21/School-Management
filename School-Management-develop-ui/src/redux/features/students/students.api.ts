@@ -44,7 +44,7 @@ export const studentsApi = createApi({
         headers: {
           businessPackageName: "private@school",
         },
-        invalidatesTags: ["studentsList"],
+        providedTags: ["studentsList"],
       }),
     }),
     getSpecificStudentDetails: builder.query<StudentsResponse, any>({
@@ -54,7 +54,7 @@ export const studentsApi = createApi({
         headers: {
           businessPackageName: "private@school",
         },
-        invalidatesTags: ["studentsList"],
+        providedTags: ["studentsList"],
       }),
     }),
     deleteStudentDetails: builder.mutation<StudentsResponse, any>({

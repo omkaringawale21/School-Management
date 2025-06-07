@@ -80,7 +80,8 @@ const MultiSelectDropdown = <T,>({
                     ? options
                         .filter((option) => value?.includes(option.value))
                         .map((option) => option.key)
-                    : value
+                    : options.find((option) => option.value === value)?.key ||
+                      ""
                 }
                 onChange={handleChange}
                 renderValue={(selected) =>

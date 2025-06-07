@@ -44,7 +44,7 @@ export const teachersApi = createApi({
         headers: {
           businessPackageName: "private@school",
         },
-        invalidatesTags: ["teachersList"],
+        providedTags: ["teachersList"],
       }),
     }),
     getSpecificTeacherDetails: builder.query<TeachersResponse, any>({
